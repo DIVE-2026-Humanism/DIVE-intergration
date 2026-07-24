@@ -1,0 +1,25 @@
+.env
+*.env
+!.env.example
+
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Claude Code 로컬 설정 (머신별)
+.claude/settings.local.json
+
+node_modules/
+.next/
+dist/
+
+# 별도 git 저장소 (DIVE-typepredict)
+github/
+
+# 원본 데이터 (KCB 합성데이터는 반출 금지)
+data/kcb/
+
+# 수집한 원본 JSON은 제외하되, 손으로 정리한 필드 사전은 포함
+data/policy/raw/*
+!data/policy/raw/fields.csv
