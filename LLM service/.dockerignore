@@ -1,0 +1,12 @@
+.git
+.github
+.venv
+__pycache__
+*.py[cod]
+.pytest_cache
+.env
+reports
+artifacts/*
+Dataset/KCB_공식데이터.csv
+Dataset/*.pdf
+tests

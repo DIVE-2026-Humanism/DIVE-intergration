@@ -1,0 +1,10 @@
+{
+  "runtime": "Ollama",
+  "base_model": "qwen3:8b",
+  "expected_model_id": "500a1f067a9f",
+  "project_model": "dive-qwen3:8b",
+  "context_length": 16384,
+  "quantization": "Q4_K_M",
+  "parameter_size": "8.2B",
+  "verified_size_bytes": 5225388164
+}

@@ -30,3 +30,21 @@ DIVE-intergration/
 - **apps** = 사용자 대면 배포
 - **LLM service** = 진단·분류·추천 백엔드
 - **data/** = 공유 데이터셋
+
+## LLM 서비스 실행
+
+```bash
+git clone https://github.com/DIVE-2026-Humanism/DIVE-intergration.git
+cd DIVE-intergration/'LLM service'
+cp .env.example .env
+docker compose up -d --build
+curl http://localhost:8000/health/ready
+```
+
+GPU 서버에서는 마지막 실행 명령을 다음과 같이 바꾼다.
+
+```bash
+docker compose -f compose.yaml -f compose.gpu.yaml up -d --build
+```
+
+상세 사용법은 [`LLM service/README.md`](<LLM service/README.md>), 외부 백엔드 연동은 [`LLM service/reports/integration_guide.md`](<LLM service/reports/integration_guide.md>)를 참고한다.

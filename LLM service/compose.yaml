@@ -1,0 +1,90 @@
+name: dive-typepredict
+
+services:
+  postgres:
+    image: postgres:18-alpine@sha256:9a8afca54e7861fd90fab5fdf4c42477a6b1cb7d293595148e674e0a3181de15
+    restart: unless-stopped
+    shm_size: 256mb
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-dive}
+      POSTGRES_USER: ${POSTGRES_USER:-dive}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?copy .env.example to .env and set POSTGRES_PASSWORD}
+      POSTGRES_INITDB_ARGS: --encoding=UTF8
+    volumes:
+      - postgres_data:/var/lib/postgresql
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+
+  ollama:
+    image: ${OLLAMA_IMAGE:-ollama/ollama@sha256:6345fbc18bd73a1e16404be681dbc6fd291a027cab43ed541abe78c4c81051b0}
+    restart: unless-stopped
+    volumes:
+      - ollama_data:/root/.ollama
+    ports:
+      - "127.0.0.1:${OLLAMA_PORT:-11434}:11434"
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 10s
+
+  ollama-init:
+    image: ${OLLAMA_IMAGE:-ollama/ollama@sha256:6345fbc18bd73a1e16404be681dbc6fd291a027cab43ed541abe78c4c81051b0}
+    restart: "no"
+    environment:
+      OLLAMA_HOST: http://ollama:11434
+      OLLAMA_BASE_MODEL: ${OLLAMA_BASE_MODEL:-qwen3:8b}
+      OLLAMA_BASE_MODEL_ID: ${OLLAMA_BASE_MODEL_ID:-500a1f067a9f}
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-dive-qwen3:8b}
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - >-
+        set -eu;
+        ollama pull "$${OLLAMA_BASE_MODEL}";
+        actual_id=$$(ollama list | awk -v model="$${OLLAMA_BASE_MODEL}" '$$1 == model {print $$2}');
+        test "$${actual_id}" = "$${OLLAMA_BASE_MODEL_ID}";
+        ollama create "$${OLLAMA_MODEL}" -f /models/Modelfile
+    volumes:
+      - ollama_data:/root/.ollama
+      - ./models:/models:ro
+    depends_on:
+      ollama:
+        condition: service_healthy
+
+  ai-api:
+    build:
+      context: .
+    restart: unless-stopped
+    environment:
+      DIVE_DATABASE_URL: postgresql://${POSTGRES_USER:-dive}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-dive}
+      DIVE_CORS_ORIGINS: ${DIVE_CORS_ORIGINS:-*}
+      DIVE_AUTO_INGEST: "true"
+      DIVE_LLM_ENABLED: ${DIVE_LLM_ENABLED:-true}
+      OLLAMA_BASE_URL: http://ollama:11434
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-dive-qwen3:8b}
+    volumes:
+      - ./artifacts:/app/artifacts
+      - ./Dataset:/app/Dataset:ro
+      - ./reports:/app/reports
+    ports:
+      - "${AI_API_BIND:-0.0.0.0}:${AI_API_PORT:-8000}:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health/ready', timeout=5)"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+
+volumes:
+  postgres_data:
+  ollama_data:

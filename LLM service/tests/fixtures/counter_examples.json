@@ -1,0 +1,88 @@
+{
+  "quantiles": {
+    "D50": 0.2,
+    "D80": 0.5,
+    "RD80": 1.5,
+    "C20": 550,
+    "C50": 700,
+    "C80": 850,
+    "NW50": 150000,
+    "IC10": -0.2,
+    "DLQ25": 7,
+    "DLQ75": 45,
+    "RD20": 0.4,
+    "percentile_shift": 0.0
+  },
+  "cases": [
+    {
+      "case": 1, "description": "연체 1건·소액·단기 + 고소득·고자산", "expected": "V1 아님(유보)",
+      "_ROW_ID": "counter-1", "추정 연소득": 70000, "대출연체건수": 1, "카드연체건수": 0, "총대출건수": 1, "Thin Filer 여부": 0,
+      "DELQ_LEVEL": 1, "DSR_PROXY": 0.1, "LOW_INC": 0, "CASH_HEAVY": 0, "INC_CHG": 0.1, "HIGH_INC": 1, "BUFFER": 1,
+      "REL_DEBT": 0.5, "신용평점": 900, "최근 12개월 현금서비스이용금액": 0, "REL_INC": 2.0, "DEBT_SUM": 20000,
+      "CARD_CONSUME_RATIO": 0.3, "EXT_CARD_RATIO": 0.5, "DEBT_UNOBS": 0
+    },
+    {
+      "case": 2, "description": "무연체 + 상환부담·현금서비스 높음", "expected": "V2",
+      "_ROW_ID": "counter-2", "추정 연소득": 35000, "대출연체건수": 0, "카드연체건수": 0, "총대출건수": 3, "Thin Filer 여부": 0,
+      "DELQ_LEVEL": 0, "DSR_PROXY": 0.75, "LOW_INC": 0, "CASH_HEAVY": 1, "INC_CHG": 0.0, "HIGH_INC": 0, "BUFFER": 0,
+      "REL_DEBT": 1.8, "신용평점": 600, "최근 12개월 현금서비스이용금액": 5000, "REL_INC": 1.1, "DEBT_SUM": 70000,
+      "CARD_CONSUME_RATIO": 0.6, "EXT_CARD_RATIO": 0.5, "DEBT_UNOBS": 0
+    },
+    {
+      "case": 3, "description": "대출 많으나 소득·자산 충분·상환부담 낮음", "expected": "S2 또는 S1",
+      "_ROW_ID": "counter-3", "추정 연소득": 45000, "대출연체건수": 0, "카드연체건수": 0, "총대출건수": 4, "Thin Filer 여부": 0,
+      "DELQ_LEVEL": 0, "DSR_PROXY": 0.1, "LOW_INC": 0, "CASH_HEAVY": 0, "INC_CHG": 0.1, "HIGH_INC": 0, "BUFFER": 1,
+      "REL_DEBT": 0.8, "신용평점": 800, "최근 12개월 현금서비스이용금액": 0, "REL_INC": 1.3, "DEBT_SUM": 50000,
+      "CARD_CONSUME_RATIO": 0.4, "EXT_CARD_RATIO": 0.5, "DEBT_UNOBS": 0
+    },
+    {
+      "case": 4, "description": "저소득이나 대출·연체·현금서비스 전무·저소비", "expected": "취약 아님(유보)",
+      "_ROW_ID": "counter-4", "추정 연소득": 15000, "대출연체건수": 0, "카드연체건수": 0, "총대출건수": 0, "Thin Filer 여부": 0,
+      "DELQ_LEVEL": 0, "DSR_PROXY": 0.0, "LOW_INC": 1, "CASH_HEAVY": 0, "INC_CHG": 0.0, "HIGH_INC": 0, "BUFFER": 0,
+      "REL_DEBT": null, "신용평점": 650, "최근 12개월 현금서비스이용금액": 0, "REL_INC": 0.7, "DEBT_SUM": 0,
+      "CARD_CONSUME_RATIO": 0.2, "EXT_CARD_RATIO": 0.5, "DEBT_UNOBS": 0
+    },
+    {
+      "case": 5, "description": "소득 감소했으나 현재 5분위 이상", "expected": "V3 아님(혼합 유보)",
+      "_ROW_ID": "counter-5", "추정 연소득": 70000, "대출연체건수": 0, "카드연체건수": 0, "총대출건수": 0, "Thin Filer 여부": 0,
+      "DELQ_LEVEL": 0, "DSR_PROXY": 0.0, "LOW_INC": 0, "CASH_HEAVY": 0, "INC_CHG": -0.3, "HIGH_INC": 1, "BUFFER": 0,
+      "REL_DEBT": null, "신용평점": 900, "최근 12개월 현금서비스이용금액": 0, "REL_INC": 2.0, "DEBT_SUM": 0,
+      "CARD_CONSUME_RATIO": 0.3, "EXT_CARD_RATIO": 0.5, "DEBT_UNOBS": 0
+    },
+    {
+      "case": 6, "description": "자가 있으나 현금흐름·상환여력 부족", "expected": "S2 아님(유보)",
+      "_ROW_ID": "counter-6", "추정 연소득": 30000, "대출연체건수": 0, "카드연체건수": 0, "총대출건수": 2, "Thin Filer 여부": 0,
+      "DELQ_LEVEL": 0, "DSR_PROXY": 0.4, "LOW_INC": 0, "CASH_HEAVY": 0, "INC_CHG": -0.3, "HIGH_INC": 0, "BUFFER": 1,
+      "REL_DEBT": 0.8, "신용평점": 750, "최근 12개월 현금서비스이용금액": 1200, "REL_INC": 1.1, "DEBT_SUM": 30000,
+      "CARD_CONSUME_RATIO": 0.6, "EXT_CARD_RATIO": 0.5, "DEBT_UNOBS": 0
+    },
+    {
+      "case": 7, "description": "비자가지만 소득·신용 안정", "expected": "S1",
+      "_ROW_ID": "counter-7", "추정 연소득": 70000, "대출연체건수": 0, "카드연체건수": 0, "총대출건수": 0, "Thin Filer 여부": 0,
+      "DELQ_LEVEL": 0, "DSR_PROXY": 0.0, "LOW_INC": 0, "CASH_HEAVY": 0, "INC_CHG": 0.1, "HIGH_INC": 1, "BUFFER": 0,
+      "REL_DEBT": null, "신용평점": 900, "최근 12개월 현금서비스이용금액": 0, "REL_INC": 2.0, "DEBT_SUM": 0,
+      "CARD_CONSUME_RATIO": 0.3, "EXT_CARD_RATIO": 0.5, "DEBT_UNOBS": 0
+    },
+    {
+      "case": 8, "description": "저평점 + Thin Filer", "expected": "THIN 유보",
+      "_ROW_ID": "counter-8", "추정 연소득": 25000, "대출연체건수": 0, "카드연체건수": 0, "총대출건수": 0, "Thin Filer 여부": 1,
+      "DELQ_LEVEL": 0, "DSR_PROXY": 0.0, "LOW_INC": 0, "CASH_HEAVY": 0, "INC_CHG": 0.0, "HIGH_INC": 0, "BUFFER": 0,
+      "REL_DEBT": null, "신용평점": 400, "최근 12개월 현금서비스이용금액": 0, "REL_INC": 1.0, "DEBT_SUM": 0,
+      "CARD_CONSUME_RATIO": 0.4, "EXT_CARD_RATIO": 0.5, "DEBT_UNOBS": 0
+    },
+    {
+      "case": 9, "description": "대출건수 있으나 제공 잔액합 0", "expected": "DEBT_UNOBS 유보",
+      "_ROW_ID": "counter-9", "추정 연소득": 32000, "대출연체건수": 0, "카드연체건수": 0, "총대출건수": 2, "Thin Filer 여부": 0,
+      "DELQ_LEVEL": 0, "DSR_PROXY": 0.25, "LOW_INC": 0, "CASH_HEAVY": 0, "INC_CHG": 0.0, "HIGH_INC": 0, "BUFFER": 0,
+      "REL_DEBT": null, "신용평점": 650, "최근 12개월 현금서비스이용금액": 0, "REL_INC": 1.1, "DEBT_SUM": 0,
+      "CARD_CONSUME_RATIO": 0.4, "EXT_CARD_RATIO": 0.5, "DEBT_UNOBS": 1
+    },
+    {
+      "case": 10, "description": "증빙연소득 0, 추정연소득 정상", "expected": "추정연소득 기준 비취약",
+      "_ROW_ID": "counter-10", "추정 연소득": 36000, "증빙연소득": 0, "대출연체건수": 0, "카드연체건수": 0, "총대출건수": 0, "Thin Filer 여부": 0,
+      "DELQ_LEVEL": 0, "DSR_PROXY": 0.0, "LOW_INC": 0, "CASH_HEAVY": 0, "INC_CHG": 0.1, "HIGH_INC": 0, "BUFFER": 0,
+      "REL_DEBT": null, "신용평점": 750, "최근 12개월 현금서비스이용금액": 0, "REL_INC": 1.1, "DEBT_SUM": 0,
+      "CARD_CONSUME_RATIO": 0.3, "EXT_CARD_RATIO": 0.5, "DEBT_UNOBS": 0
+    }
+  ]
+}
