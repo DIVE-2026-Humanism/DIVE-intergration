@@ -9,7 +9,7 @@ DIVE-intergration/
 │
 ├── apps/                       # 사용자 대면 (배포 단위)
 │   ├── web/                    프론트 — 라이트/정밀 진단 화면
-│   └── backend/                Node — /v1/diagnose 호출, 세션·KCB샘플 로드
+│   └── backend/                FastAPI — /v1/diagnose 호출, 세션·KCB샘플 로드
 │
 ├── LLM service/                # LLM 서비스 (진단·6유형분류·추천)
 │
