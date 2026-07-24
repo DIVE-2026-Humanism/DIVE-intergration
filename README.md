@@ -48,3 +48,6 @@ docker compose -f compose.yaml -f compose.gpu.yaml up -d --build
 ```
 
 상세 사용법은 [`LLM service/README.md`](<LLM service/README.md>), 외부 백엔드 연동은 [`LLM service/reports/integration_guide.md`](<LLM service/reports/integration_guide.md>)를 참고한다.
+
+# ISSUE
+1. 데이터 정제 합의점 찾기
