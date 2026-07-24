@@ -1,0 +1,17 @@
+.venv/
+__pycache__/
+*.py[cod]
+.env
+.pytest_cache/
+artifacts/*
+!artifacts/.gitkeep
+Dataset/KCB_공식데이터.csv
+Dataset/*KCB*원본*.csv
+Dataset/*개인정보*.csv
+Dataset/KCB_테스트_합성데이터.csv
+Dataset/KCB_테스트_합성데이터.manifest.json
+Dataset/KCB_테스트_샘플.json
+reports/*
+!reports/implementation_details.md
+!reports/integration_guide.md
+!reports/llm_model_guide.md

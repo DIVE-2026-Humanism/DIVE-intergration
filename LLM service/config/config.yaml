@@ -1,0 +1,146 @@
+project:
+  seed: 20260721
+  # 기본 학습 명령은 대회 당일 공식 KCB 데이터용이다. 합성 빌더는 메모리에서 synthetic_test로 바꾼다.
+  data_kind: official_kcb
+  dataset_dir: Dataset
+  reports_dir: reports
+  artifacts_dir: artifacts
+
+paths:
+  # 대회 당일 공식 KCB 파일을 이 이름으로 저장한다.
+  main_csv: "KCB_공식데이터.csv"
+  income_card_glob: "개인소득_및_카드소비*.csv"
+  debt_glob: "개인_가계대출*.csv"
+  yearly_household_glob: "연도별_월평균_가구_소득*.csv"
+  age_household_glob: "월평균_가구_소득*.xlsx"
+  policy_json: "busan_policies.json"
+  codebook_json: "codebook.json"
+
+io:
+  csv_encodings: [cp949, euc-kr, utf-8-sig]
+  sentinel: -99999999
+
+filters:
+  youth_age_codes: [18, 20, 25, 30, 35]
+  busan_code_prefix: "26"
+
+split:
+  id_candidates: [개인ID, 고객ID, CI, 개인식별키]
+  time_candidates: [기준년월, 기준일자, 시점, 기준시점]
+  n_splits: 3
+
+columns:
+  # 공식 KCB 42개와 1인가구 맞춤 피드백용 추정가구원수를 포함한 필수 입력이다.
+  required:
+    - 성별
+    - 연령대
+    - 직업군
+    - 거주지 시군구 코드
+    - 근무지 시군구 코드
+    - 추정월소득
+    - 증빙연소득
+    - 추정 연소득
+    - 2년전 추정 연소득 금액
+    - 총자산평가금액(주택)
+    - 순자산평가금액(주택)
+    - 자가거주여부
+    - 현 거주지의 아파트여부
+    - 현 거주지의 매매가(국토부 실거래가) 또는 공시가격
+    - 차량보유(국산/수입)
+    - 추정 LTV
+    - 추정DTI
+    - 신용평점
+    - 총대출건수
+    - 신용대출-총대출약정액
+    - 신용대출-총대출잔액
+    - 주택담보대출-총대출약정액
+    - 주택담보대출-총대출잔액
+    - 정책자금대출-총대출약정액
+    - 정책자금대출-총대출잔액
+    - 총 대출 상환금액 (최근 12개월)
+    - 최근 12개월 신용카드소비금액
+    - 최근 12개월 체크카드소비금액
+    - 최근 12개월 일시불이용금액
+    - 최근 12개월 할부이용금액
+    - 최근 12개월 현금서비스이용금액
+    - 대출연체건수
+    - 카드연체건수
+    - 연체일수
+    - 대출연체금액
+    - 카드연체금액
+    - Thin Filer 여부
+    - 파산, 개인회생 신청 여부
+    - 2년내 현거주지평균실거래가
+    - 2년내 현거주지평균전세거래가
+    - 2년내 직장명이력건수
+    - 2년내 이직후 소득 증감액
+    - 추정가구원수
+external:
+  sources:
+    income_card: "2023 부산 청년 개인소득 및 카드소비 통계 (Dataset/개인소득_및_카드소비 CSV)"
+    debt: "2023 부산 청년 개인 가계대출 통계 (Dataset/개인_가계대출 CSV)"
+    credit: "대회 당일 KCB 부산 청년 표본 (Thin Filer 제외)"
+  anchors:
+    18: {inc: 2054, q1: 1784, q5: 4801, card: 746}
+    20: {inc: 2054, q1: 1784, q5: 4801, card: 746}
+    25: {inc: 2811, q1: 1912, q5: 4924, card: 1405}
+    30: {inc: 3596, q1: 1866, q5: 5038, card: 1988}
+    35: {inc: 4207, q1: 1819, q5: 5570, card: 2452}
+  debt:
+    18: 1433
+    20: 1433
+    25: 3860
+    30: 7280
+    35: 9487
+  amount_scale_to_kcb: 10
+  tolerance: 0.000001
+
+quantiles:
+  D50: 0.50
+  D80: 0.80
+  RD80: 0.80
+  C20: 0.20
+  C50: 0.50
+  C80: 0.80
+  NW50: 0.50
+  IC10: 0.10
+  DLQ25: 0.25
+  DLQ75: 0.75
+  RD20: 0.20
+
+training:
+  iterations: 600
+  early_stopping_rounds: 100
+  verbose: false
+  thread_count: -1
+  hyperparameters:
+    - {depth: 6, learning_rate: 0.06, l2_leaf_reg: 3}
+    - {depth: 8, learning_rate: 0.06, l2_leaf_reg: 5}
+    - {depth: 6, learning_rate: 0.03, l2_leaf_reg: 7}
+
+policy_db:
+  dsn_env: DIVE_DATABASE_URL
+
+local_llm:
+  enabled: true
+  base_url_env: OLLAMA_BASE_URL
+  base_url: http://127.0.0.1:11434
+  allowed_hosts: [127.0.0.1, localhost, "::1", ollama]
+  model_env: OLLAMA_MODEL
+  model: dive-qwen3:8b
+  context_length: 16384
+  shortlist_size: 12
+  max_retries: 0
+  timeout_seconds: 20
+  queue_timeout_seconds: 1
+  failure_cooldown_seconds: 30
+  keep_alive: 10m
+
+service:
+  recommendation_top_k: 5
+
+consumption:
+  # 부산 구군별 월세 CSV. 최소 컬럼: 구군, 평균월세만원
+  rent_csv: null
+  # 전세가를 월세로 근사하려면 검증된 연 전월세전환율을 명시한다.
+  jeonse_conversion_rate: null

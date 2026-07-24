@@ -1,0 +1,16 @@
+catboost>=1.2,<2
+pandas>=2.2,<3
+numpy>=2.0,<3
+scikit-learn>=1.5,<2
+pyyaml>=6,<7
+matplotlib>=3.9,<4
+openpyxl>=3.1,<4
+pyarrow>=17,<30
+pytest>=8,<10
+tabulate>=0.9,<1
+pydantic>=2.9,<3
+psycopg[binary]>=3.2,<4
+fastapi>=0.115,<1
+uvicorn[standard]>=0.34,<1
+httpx>=0.28,<1
+pyflakes>=3.2,<4
