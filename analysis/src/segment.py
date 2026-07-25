@@ -167,14 +167,65 @@ def segment(df: pd.DataFrame, axis_columns: dict[str, list[str]],
     h_cut = float(train["jeonse_income_multiple"].quantile(C.H_FLAG_QUANTILE))
     h_jeonse = out["jeonse_income_multiple"] >= h_cut
     h_commute = out["commute_mismatch"] == 1
-    out["H_flag"] = (h_jeonse | h_commute).astype("int8")
-    out["segment_ops"] = out["segment"] + np.where(out["H_flag"] == 1, "-H", "")
+    # §11.2 원안은 (주거비 상위 25%) OR (commute_mismatch)였으나, 근무지 시군구가 무작위 배정임이
+    # 실측되어(거주지↔근무지 Cramér's V = 0.023, 무작위 이론값 대비 차이 없음) commute 조건을 뺀다.
+    # 원안대로 두면 H flag가 94%로 포화되어 수정자 기능을 상실한다.
+    out["H_flag"] = h_jeonse.astype("int8")
+    # R flag = 거래기록 없음(비정형 주거 프록시). H와 OR로 합치면 65.7%로 포화되므로 별도 차원.
+    out["R_flag"] = out["no_housing_record"].astype("int8")
+    suffix = (
+        pd.Series(np.where(out["H_flag"] == 1, "H", ""), index=out.index)
+        + pd.Series(np.where(out["R_flag"] == 1, "R", ""), index=out.index)
+    )
+    out["segment_ops"] = out["segment"] + suffix.radd("-").where(suffix != "", "")
     info["h_flag"] = {
         "jeonse_income_multiple_cut": h_cut,
         "share": float(out["H_flag"].mean()),
         "share_jeonse_only": float(h_jeonse.mean()),
         "share_commute_only": float(h_commute.mean()),
     }
+
+    # 정책 사각지대 — 소득 기준으로는 지원 대상이 아닌데(기준 중위소득 100% 초과)
+    # 재무 스트레스는 상위인 집단. 소득 등급이 외부 절대 기준이라 순환논리가 없다.
+    stress_cut = float(train[C.FINANCIAL_SCORE].quantile(C.BLINDSPOT_STRESS_QUANTILE))
+    blind = (out["income_to_median"] > C.BLINDSPOT_INCOME_RATIO) & (
+        out[C.FINANCIAL_SCORE] >= stress_cut
+    )
+    out["policy_blindspot"] = blind.astype("int8")
+    above = out["income_to_median"] > C.BLINDSPOT_INCOME_RATIO
+    info["policy"] = {
+        "median_income_source": C.MEDIAN_INCOME_SOURCE,
+        "median_income_annual_thousand": C.MEDIAN_INCOME_ANNUAL_THOUSAND,
+        "stress_cut": stress_cut,
+        "grade_counts": {str(k): int(v) for k, v in
+                         out["income_grade"].value_counts().reindex(C.INCOME_GRADE_LABELS).fillna(0).items()},
+        "grade_shares": {str(k): float(v) for k, v in
+                         out["income_grade"].value_counts(normalize=True).reindex(C.INCOME_GRADE_LABELS).fillna(0).items()},
+        "eligible_by_income": int(out["policy_eligible_by_income"].sum()),
+        "blindspot_count": int(blind.sum()),
+        "blindspot_share": float(blind.mean()),
+        "blindspot_share_of_above_median": float(blind.sum() / above.sum()) if above.any() else float("nan"),
+        "sample_median_to_standard": float(
+            out[C.COL_INCOME_Y].median() / C.MEDIAN_INCOME_ANNUAL_THOUSAND
+        ),
+    }
+    for col, label in [("cash_advance_flag", "현금서비스"), ("dsr", "dsr"),
+                       (C.COL_SCORE, "신용평점"), ("total_delinq_cnt", "연체건수"),
+                       (C.COL_INCOME_Y, "추정 연소득")]:
+        info["policy"][f"blindspot_{label}"] = float(pd.to_numeric(out.loc[blind, col], errors="coerce").mean())
+        info["policy"][f"overall_{label}"] = float(pd.to_numeric(out[col], errors="coerce").mean())
+
+    # R flag 통계 — policy_blindspot 산출 이후에 계산한다.
+    info["r_flag"] = {
+        "share": float(out["R_flag"].mean()),
+        "definition": "2년내 현거주지 실거래 신고 기록 없음 (전세거래가 결측) — 비정형 주거 프록시",
+    }
+    for col, label in [(C.COL_INCOME_Y, "소득"), (C.COL_SCORE, "신용평점"),
+                       (C.COL_IS_APT, "아파트비율"), ("policy_blindspot", "사각지대")]:
+        info["r_flag"][f"기록있음_{label}"] = float(
+            pd.to_numeric(out.loc[out["R_flag"] == 0, col], errors="coerce").mean())
+        info["r_flag"][f"기록없음_{label}"] = float(
+            pd.to_numeric(out.loc[out["R_flag"] == 1, col], errors="coerce").mean())
 
     # 11.3 크기 점검
     sizes = out["segment"].value_counts().reindex(C.SEGMENT_ORDER).fillna(0).astype(int)

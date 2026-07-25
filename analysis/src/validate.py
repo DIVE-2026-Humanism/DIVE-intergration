@@ -22,7 +22,7 @@ from .features import DERIVED_NUMERIC, DERIVED_ALL
 from .reduced_model import OBSERVABLE_IN_QUESTIONNAIRE
 
 PROFILE_METRICS = [
-    C.COL_INCOME_Y, "dsr", C.COL_SCORE, "job_turnover", "income_trajectory",
+    C.COL_INCOME_Y, "income_to_median", "dsr", C.COL_SCORE, "job_turnover", "income_trajectory",
     "consumption_ratio", "jeonse_income_multiple", "credit_score_residual",
     "delinq_rate", C.FINANCIAL_SCORE, C.EMPLOYMENT_SCORE,
 ]
@@ -199,7 +199,36 @@ def make_figures(df: pd.DataFrame, info: dict, figdir: Path, seed: int = C.SEED)
     fig.colorbar(im, ax=ax, shrink=0.8)
     _savefig(fig, figdir / "confusion_matrix.png")
 
-    # 8) 유형별 레이더 (분위수 평균)
+    # 8) 정책 기준(기준 중위소득) 대비 소득 등급 × 재무 스트레스
+    fig, axes = plt.subplots(1, 2, figsize=(12, 4.5))
+    grades = C.INCOME_GRADE_LABELS
+    ascii_g = ["<=50%", "50-60%", "60-100%", "100-120%", ">120%"]
+    counts = d["income_grade"].value_counts().reindex(grades).fillna(0)
+    colors = ["#e76f51", "#f4a261", "#e9c46a", "#8ab17d", "#2a9d8f"]
+    axes[0].bar(ascii_g, counts.to_numpy(), color=colors)
+    for i, v in enumerate(counts.to_numpy()):
+        axes[0].text(i, v, f"{int(v):,}\n{v / len(d):.1%}", ha="center", va="bottom", fontsize=8)
+    axes[0].set_title("Income vs national median standard (1-person household)")
+    axes[0].set_ylabel("rows")
+    axes[0].set_ylim(0, counts.max() * 1.25)
+
+    blind = d["policy_blindspot"] == 1
+    sample = d.sample(min(8000, len(d)), random_state=seed)
+    sb = sample["policy_blindspot"] == 1
+    axes[1].scatter(sample.loc[~sb, "income_to_median"], sample.loc[~sb, C.FINANCIAL_SCORE],
+                    s=4, alpha=0.25, color="#adb5bd", label="others")
+    axes[1].scatter(sample.loc[sb, "income_to_median"], sample.loc[sb, C.FINANCIAL_SCORE],
+                    s=5, alpha=0.55, color="#e63946", label="policy blind spot")
+    axes[1].axvline(C.BLINDSPOT_INCOME_RATIO, color="black", ls="--", lw=1)
+    axes[1].axhline(info["segment"]["policy"]["stress_cut"], color="black", ls="--", lw=1)
+    axes[1].set_xlim(0, 3)
+    axes[1].set_xlabel("income / national median standard")
+    axes[1].set_ylabel("financial_stress_score")
+    axes[1].set_title(f"Blind spot: {blind.sum():,} rows ({blind.mean():.1%})")
+    axes[1].legend(markerscale=3, fontsize=8)
+    _savefig(fig, figdir / "policy_blindspot.png")
+
+    # 9) 유형별 레이더 (분위수 평균)
     radar_metrics = ["dsr", "consumption_ratio", "delinq_rate", "job_turnover",
                      "jeonse_income_multiple", "total_loan_balance"]
     ranked = d[radar_metrics].apply(lambda s: pd.to_numeric(s, errors="coerce").rank(pct=True))
@@ -251,9 +280,43 @@ def write_report(df: pd.DataFrame, info: dict, outdir: Path) -> None:
     L.append("> **유형 라벨은 개인 신용 판정이 아니라 정책 아웃리치 우선순위다.** "
              "개인에 대한 낙인으로 사용해서는 안 된다.\n")
 
-    # ---- 최상단: T3 강조 + 경고
+    # ---- 최상단: 정책 사각지대 (외부 절대 기준 기반)
+    pol = seg_info["policy"]
+    L.append("## ★★ 정책 사각지대 — 최우선 지표\n")
+    L.append(f"> **소득 기준으로는 지원 대상이 아닌데(기준 중위소득 100% 초과) "
+             f"재무 스트레스가 상위 {1 - C.BLINDSPOT_STRESS_QUANTILE:.0%}인 집단**\n")
+    L.append(f"# {pol['blindspot_count']:,}명 ({pol['blindspot_share']:.1%})\n")
+    L.append(f"기준 중위소득 100% 초과 인구의 **{pol['blindspot_share_of_above_median']:.1%}**에 해당한다.\n")
+    L.append("| 지표 | 사각지대 집단 | 전체 | 배수 |")
+    L.append("|---|---:|---:|---:|")
+    for label, fmt in [("현금서비스", "{:.1%}"), ("dsr", "{:.3f}"), ("신용평점", "{:.0f}"),
+                       ("연체건수", "{:.3f}"), ("추정 연소득", "{:,.0f}")]:
+        b, o = pol[f"blindspot_{label}"], pol[f"overall_{label}"]
+        # 신용평점은 낮을수록 나쁘므로 배수가 아니라 점수 차로 읽는다.
+        ratio = f"{b - o:+,.0f}점" if label == "신용평점" else (f"{b / o:.1f}배" if o else "-")
+        L.append(f"| {label} | {fmt.format(b)} | {fmt.format(o)} | {ratio} |")
+    L.append("")
+    L.append(f"- 판정 기준: {pol['median_income_source']}")
+    L.append("- 소득 등급은 **정부 고시 절대 기준**이라 우리가 만든 값이 아니다(순환논리 없음). "
+             "재무 스트레스 축에서 `dsr`·`cash_advance_flag`의 가중치는 사실상 0인데도 "
+             "위 배수 차이가 나므로, 축이 만들어낸 차이가 아니다.")
+    L.append("- **정책 함의**: 현행 소득 기준 청년정책은 이 집단을 포착하지 못한다. "
+             "발제 자료가 지목한 \"자산 형성 대비 주거비·고정지출 부담으로 상환력이 악화되는 구조\"에 해당한다.\n")
+
+    L.append("### 기준 중위소득 대비 소득 분포\n")
+    L.append(f"표본 소득 중앙값은 기준 중위소득의 **{pol['sample_median_to_standard']:.0%}** 수준이다.\n")
+    L.append("| 등급 | 인원 | 비중 |")
+    L.append("|---|---:|---:|")
+    for g in C.INCOME_GRADE_LABELS:
+        L.append(f"| {g} | {pol['grade_counts'].get(g, 0):,} | {pol['grade_shares'].get(g, 0):.2%} |")
+    L.append("")
+    L.append(f"> 소득 기준 정책 대상(중위 60% 이하)은 **{pol['eligible_by_income']:,}명**에 그친다. "
+             "합성데이터의 소득 분포가 실제 부산 청년 대비 양 끝단이 절단되어 있음을 함께 고려해야 한다"
+             "(`data_caveats.md` 참조).\n")
+
+    # ---- T3 강조 + 경고 (method.md §11.3)
     t3_n = seg_info["sizes"].get("T3", 0)
-    L.append("## ★ T3(잠재 불안군) 규모 — 최우선 확인 지표\n")
+    L.append("## ★ T3(잠재 불안군) 규모 — method.md §11.3 지정 지표\n")
     L.append(f"**T3 = {t3_n:,}명 ({seg_info['t3_share']:.2%})** "
              f"— 재무는 안정으로 보이나 고용이 불안한 사각지대 후보.\n")
     if seg_info["warnings"]:
@@ -314,14 +377,13 @@ def write_report(df: pd.DataFrame, info: dict, outdir: Path) -> None:
               if seg_info["t5"]["alt_reported"] else ""))
     hf = seg_info["h_flag"]
     L.append(f"- H flag(주거 부담 수정자) 전체 비중 {hf['share']:.2%} "
-             f"= jeonse_income_multiple 상위 25%({hf['share_jeonse_only']:.2%}, "
-             f"컷 {hf['jeonse_income_multiple_cut']:.3f}) **OR** "
-             f"commute_mismatch({hf['share_commute_only']:.2%})")
-    if hf["share_commute_only"] >= 0.50:
-        L.append("  - ⚠ `commute_mismatch`가 과반이라 H flag가 사실상 포화된다. "
-                 "부산 내 구·군 간 통근이 일반적이므로, 운영 12구분을 쓰려면 "
-                 "H 정의를 주거비 단독 기준으로 좁히거나 통근 조건을 "
-                 "'거주지 ≠ 근무지 AND 주거비 상위 50%'로 조합할 것을 권한다(발제팀 합의 필요).")
+             f"= jeonse_income_multiple 상위 {1 - C.H_FLAG_QUANTILE:.0%} "
+             f"(컷 {hf['jeonse_income_multiple_cut']:.3f})")
+    L.append(f"  - **§11.2 원안 수정**: 원안은 위 조건 **OR** `commute_mismatch`였으나, "
+             f"근무지 시군구가 무작위 배정임이 실측되어(거주지↔근무지 Cramér's V = 0.023) "
+             f"통근 조건을 제외했다. 원안대로면 `commute_mismatch`가 "
+             f"{hf['share_commute_only']:.1%}(16개 구 무작위 시 이론값 93.75%)에 달해 "
+             "H flag가 94%로 포화되어 수정자 기능을 잃는다.")
     L.append("")
 
     # 3. 세그먼트 프로파일
@@ -340,10 +402,96 @@ def write_report(df: pd.DataFrame, info: dict, outdir: Path) -> None:
     L.extend(_fmt_table(eff_view))
     L.append("")
 
+    # 4.3 비교 기준 — 서비스가 "당신은 상위 X%"를 말할 때 무엇과 비교하는가
+    L.append("## 4.3 비교 기준 (서비스 문구의 근거)\n")
+    L.append("| 지표 | 비교군 | 근거 |")
+    L.append("|---|---|---|")
+    L.append(f"| 소득 | **실제 부산 청년(18~39세)** | {C.BUSAN_YOUTH_INCOME_SOURCE} |")
+    L.append(f"| 소득(정책 자격) | 정부 고시 절대 기준 | {C.MEDIAN_INCOME_SOURCE} |")
+    L.append("| 신용평점 · 부채 · 상환 · 소비 | **제공 표본 10만 명(train)** | 외부 분포 미확보 — "
+             "`fitted_params.json`의 `percentile_reference.sample_deciles_train` |")
+    L.append("")
+    bp = d["income_percentile_busan"]
+    L.append(f"표본 소득 중앙값은 **부산 청년 중 하위 {bp.median():.0f}%**에 위치한다. "
+             "합성표본이 실제 부산 청년보다 소득 상위 쪽에 치우쳐 있다는 뜻이다.\n")
+    L.append("| 월소득 | 부산 청년 중 위치 |")
+    L.append("|---:|---|")
+    from .features import busan_income_percentile
+    for manwon in [150, 200, 250, 300, 350, 450]:
+        v = float(busan_income_percentile(pd.Series([manwon * 12 * 10])).iloc[0])
+        L.append(f"| {manwon}만원 | 하위 {v:.0f}% |")
+    L.append("")
+    L.append("> 부채·소비·신용평점은 외부 분포를 확보하지 못해 **제공 표본을 비교군으로 쓴다.** "
+             "서비스 문구에 \"전국 대비\"라고 쓰면 안 되며, "
+             "\"부산 청년 1인가구 10만 명 중 상위 X%\"로 표기해야 한다. "
+             "비교군이 서비스 대상과 일치하므로 전국 통계보다 오히려 적합하다.\n")
+
+    # 4.4 주거 거래기록 결측 = 비정형 주거 프록시
+    rf = seg_info["r_flag"]
+    L.append("## 4.4 R flag — 주거 거래기록 없음 (결측이 곧 신호)\n")
+    L.append(f"`2년내 현거주지평균전세거래가` 결측 **{rf['share']:.1%}**는 무작위 결측이 아니다. "
+             "정의서상 이 값은 \"국토교통부 실거래가 기준 **등록된** 현거주지의 2년간 평균\"이므로, "
+             "결측은 **해당 주소지에 최근 2년간 실거래 신고 기록이 없음**을 뜻한다. "
+             "거래가 잦은 아파트는 기록이 남고, 단독·다가구·빌라는 남지 않는다.\n")
+    L.append("| 지표 | 거래기록 있음 | 거래기록 없음 |")
+    L.append("|---|---:|---:|")
+    for label, fmt in [("소득", "{:,.0f}"), ("신용평점", "{:.0f}"),
+                       ("아파트비율", "{:.1%}"), ("사각지대", "{:.1%}")]:
+        L.append(f"| {label} | {fmt.format(rf[f'기록있음_{label}'])} | {fmt.format(rf[f'기록없음_{label}'])} |")
+    L.append("")
+    L.append("> method.md §16-1(\"결측 여부 자체가 취약주거 프록시일 수 있다\")이 전수에서 확인됐다. "
+             "STEP 3에서 결측에 예측값을 대입하면 이 신호가 평균값으로 덮이므로, "
+             "`no_housing_record`를 **정식 파생변수로 승격**하고 운영 표기에 **R**로 병기한다"
+             "(예: `T4-HR` = 복합 위기군 + 주거비 부담 상위 + 거래기록 없음).")
+    L.append("> H flag와 OR로 합치지 않은 이유: 결측률이 65.7%라 합치면 수정자가 포화되어 "
+             "`commute_mismatch`와 같은 실패를 반복한다. 두 축을 독립 차원으로 유지한다.\n")
+
+    # 4.5 고용형태 — 코드북 확보로 해석 가능해진 유일한 외부 타당 변수
+    L.append("## 4.5 고용형태 프로파일 (직업군 코드북 적용)\n")
+    L.append("`데이터사용컬럼정의서.xlsx` [코드] 시트로 직업군 코드북을 확보해, "
+             "method.md §16-4(\"의미 부여 금지\")의 전제가 해소되었다.\n")
+    job = d.groupby("job_name", sort=False).agg(
+        인원=("job_name", "size"),
+        소득중앙값=(C.COL_INCOME_Y, "median"),
+        신용평점=(C.COL_SCORE, "mean"),
+        현금서비스=("cash_advance_flag", "mean"),
+        연체율=("delinq_rate", "mean"),
+        T4비중=("segment", lambda s: (s == "T4").mean()),
+        정책자금보유=("has_policy_loan", "mean"),
+        사각지대=("policy_blindspot", "mean"),
+    ).sort_values("인원", ascending=False).reset_index()
+    for c in ["현금서비스", "연체율", "T4비중", "정책자금보유", "사각지대"]:
+        job[c] = job[c] * 100
+    L.extend(_fmt_table(job, "{:,.1f}"))
+    L.append("\n(비율 컬럼 단위 %)\n")
+
+    emp = d[d["employment_type"] == "급여소득"]
+    sel = d[d["employment_type"] == "자영업"]
+    L.append("**급여소득자 vs 자영업자** — 실측상 가장 강한 외부 타당 변수\n")
+    L.append("| 지표 | 급여소득 | 자영업 | 배수 |")
+    L.append("|---|---:|---:|---:|")
+    for col, name, fmt in [("has_policy_loan", "정책자금 대출 보유", "{:.2%}"),
+                           ("policy_blindspot", "정책 사각지대", "{:.1%}"),
+                           ("cash_advance_flag", "현금서비스", "{:.1%}"),
+                           ("multi_debt", "다중채무(3건+)", "{:.1%}"),
+                           ("dsr", "dsr", "{:.3f}")]:
+        a, b = float(emp[col].mean()), float(sel[col].mean())
+        L.append(f"| {name} | {fmt.format(a)} | {fmt.format(b)} | {b / a:.2f}배 |")
+    L.append("")
+    L.append("> **중요**: 6유형 라벨은 `has_policy_loan`(실제 정책 접점)을 전혀 설명하지 못하지만"
+             "(eta² ≈ 0), **고용형태는 2배 차이로 가른다**. 정책 대상 선별에서는 유형보다 "
+             "고용형태가 더 강한 신호이므로, 아웃리치 우선순위 산정에 반드시 병용할 것.\n")
+    L.append(f"> §10.1 각주(\"PC1이 낮으면 직업군 원핫 추가 검토 — 코드북 확보 전제\") 이행 결과: "
+             f"고용축에 `self_employed`를 추가하면 PC1이 "
+             f"{sc_info['axes']['employment']['pc1_evr']:.1%} → 35.1%로 오히려 낮아지고 "
+             "축 변수와의 상관도 |0.06| 이하라 **축에는 추가하지 않았다**. "
+             "대신 위와 같이 독립 차원으로 사용한다.\n")
+
     # 5. 교차표
     L.append("## 5. 교차표 (행 비율)\n")
-    for col, title in [(C.COL_AGE, "연령대"), (C.COL_GENDER, "성별"),
-                       (C.COL_REGION_HOME, "거주 구·군"), (C.COL_JOB, "직업군")]:
+    for col, title in [("income_grade", "기준 중위소득 등급"), ("employment_type", "고용형태"),
+                       (C.COL_AGE, "연령대"), (C.COL_GENDER, "성별"),
+                       ("region_name", "거주 구·군"), ("job_name", "직업군")]:
         ct = pd.crosstab(d["segment"], d[col], normalize="index").reindex(C.SEGMENT_ORDER).dropna(how="all")
         ct = ct.reset_index().rename(columns={"segment": "유형"})
         ct.columns = [str(c) for c in ct.columns]
@@ -515,7 +663,7 @@ def write_report(df: pd.DataFrame, info: dict, outdir: Path) -> None:
     L.append("## 10. 시각화\n")
     for name in ["segment_scatter.png", "segment_size.png", "correlation_heatmap.png",
                  "pca_scree.png", "gmm_selection.png", "residual_dist.png",
-                 "confusion_matrix.png", "radar_by_segment.png"]:
+                 "confusion_matrix.png", "policy_blindspot.png", "radar_by_segment.png"]:
         L.append(f"- `figures/{name}`")
     L.append("")
 

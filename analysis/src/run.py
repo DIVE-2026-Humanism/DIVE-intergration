@@ -140,7 +140,10 @@ def main(argv: list[str] | None = None) -> int:
                    f"실루엣 {seg_info['gmm']['best_k_silhouette']:.3f} "
                    f"(best k={seg_info['gmm']['best_k_by_bic']})")
     _log("STEP 7", "규모 " + " ".join(f"{k}:{v:,}" for k, v in seg_info["sizes"].items()))
-    print(f"\n★ T3(잠재 불안군) = {seg_info['sizes'].get('T3', 0):,}명 "
+    pol = seg_info["policy"]
+    print(f"\n★★ 정책 사각지대(기준 중위소득 100% 초과 & 재무스트레스 상위 25%) = "
+          f"{pol['blindspot_count']:,}명 ({pol['blindspot_share']:.1%})", flush=True)
+    print(f"★  T3(잠재 불안군) = {seg_info['sizes'].get('T3', 0):,}명 "
           f"({seg_info['t3_share']:.2%})\n", flush=True)
     for w in seg_info["warnings"]:
         print(w, file=sys.stderr, flush=True)
@@ -165,8 +168,10 @@ def main(argv: list[str] | None = None) -> int:
 
     # segments.csv
     seg_cols = (
-        ["split", "segment", "segment_name", "segment_ops", "segment_rule", "H_flag",
+        ["split", "segment", "segment_name", "segment_ops", "segment_rule", "H_flag", "R_flag",
          C.FINANCIAL_SCORE, C.EMPLOYMENT_SCORE, "credit_score_residual",
+         "income_to_median", "income_grade", "policy_eligible_by_income", "policy_blindspot",
+         "job_name", "employment_type", "region_name", "income_percentile_busan",
          "reduced_pred", "reduced_confidence", "reduced_source", "anomaly", "gmm_cluster",
          "jeonse_imputed"]
         + features.DERIVED_ALL
@@ -194,11 +199,33 @@ def main(argv: list[str] | None = None) -> int:
         "axis_pc1_evr": {k: v["pc1_evr"] for k, v in sc_info["axes"].items()},
         "axis_weight_mode": {k: v["weight_mode"] for k, v in sc_info["axes"].items()},
         "segment_cuts": seg_info["cuts"],
+        "policy_standard": {
+            "source": C.MEDIAN_INCOME_SOURCE,
+            "median_income_monthly_krw": C.MEDIAN_INCOME_MONTHLY_KRW,
+            "median_income_annual_thousand": C.MEDIAN_INCOME_ANNUAL_THOUSAND,
+            "grade_edges": C.INCOME_GRADE_EDGES,
+            "grade_labels": C.INCOME_GRADE_LABELS,
+            "blindspot_stress_cut": seg_info["policy"]["stress_cut"],
+        },
         "h_flag_cut": seg_info["h_flag"]["jeonse_income_multiple_cut"],
         "gmm": {k: seg_info["gmm"][k] for k in
                 ("best_k_by_bic", "best_k_silhouette", "gmm_led", "ari_vs_rules", "agreement_rate")},
         "label_source": seg_info["label_source"],
         "binning": json.loads((outdir / "binning.json").read_text(encoding="utf-8")),
+        # 서비스 비교 문구용 백분위 기준. 외부 분포가 있는 소득은 부산 청년 통계를,
+        # 나머지는 제공 표본(train)을 비교군으로 쓴다 — 근거는 validation_report.md 참조.
+        "percentile_reference": {
+            "external_busan_youth_income": {
+                "source": C.BUSAN_YOUTH_INCOME_SOURCE,
+                "band_edges_manwon_month": C.BUSAN_YOUTH_INCOME_BAND_EDGES,
+                "band_shares_pct": C.BUSAN_YOUTH_INCOME_BAND_SHARES,
+            },
+            "sample_deciles_train": {
+                v: [float(df.loc[df["split"] == "train", v].quantile(q / 10))
+                    for q in range(1, 10)]
+                for v in C.SAMPLE_PERCENTILE_VARS if v in df.columns
+            },
+        },
         "reduced_model": {
             "chosen_depth": red_info["chosen_depth"],
             "test_accuracy": red_info["decision_tree"]["test_accuracy"],

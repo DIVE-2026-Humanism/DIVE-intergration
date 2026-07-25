@@ -13,7 +13,7 @@ python -m src.run --input "../important data/(합성데이터)종합해커톤.cs
 
 - `--seed` 기본 42. 동일 시드로 2회 실행하면 결과가 동일하다.
 - `--sample N` 은 스모크 테스트용 행 샘플. 전수 실행은 생략한다.
-- 전수 실행 소요는 약 3~5분(8코어 기준).
+- 전수 실행 소요 약 30초(8코어 기준).
 
 ## 파이프라인 (method.md §17)
 
@@ -39,7 +39,7 @@ python -m src.run --input "../important data/(합성데이터)종합해커톤.cs
 | `data_caveats.md` | 가정 · 한계 · 발제사 확인 필요 항목 |
 | `fitted_params.json` | train 기준 분위수 격자 · 컷 · 가중치 · 구간 경계 (누수 방지 핵심, 실서비스 재사용) |
 | `features_summary.csv` | 파생변수 기술통계 |
-| `segments.csv` | 행별 유형 · 두 축 스코어 · H flag · 주요 파생변수 |
+| `segments.csv` | 행별 유형 · 두 축 스코어 · H/R flag · 소득등급 · 고용형태 · 주요 파생변수 |
 | `segment_profile.csv` | 유형별 통계 (발표 표 직행) |
 | `effect_sizes.csv` | 유형 간 차이의 eta² |
 | `imputer_jeonse.pkl` / `score_residual_model.pkl` / `classifier.pkl` / `anomaly_model.pkl` | 학습 ①~④ |
@@ -47,17 +47,17 @@ python -m src.run --input "../important data/(합성데이터)종합해커톤.cs
 | `binning.json` | 구간 경계 (실서비스 재사용) |
 | `validation_report.md` | 종합 리포트 |
 | `run_metrics.json` | 전 단계 지표 원본 |
-| `figures/*.png` | 시각화 8종 |
+| `figures/*.png` | 시각화 9종 |
 
 `outputs/`는 gitignore 대상이다. KCB 원본 행은 저장소에 커밋하지 않는다.
 
 ## 설계 제약 (method.md §16)
 
 - 부스팅 계열(LightGBM · XGBoost · CatBoost · HistGradientBoosting) **사용 금지** — 판정 근거를 규칙으로 출력해야 한다.
-- 절대값 임계값 금지, 모든 컷은 **분위수 기준**.
+- 모든 컷은 **분위수 기준**. 유일한 예외는 정부 고시 기준 중위소득(정책 자격선).
 - train 외 데이터로 통계량을 계산하지 않는다 → 전부 `fitted_params.json`에 저장 후 valid/test에 적용.
 - 결측을 0으로 채우지 않는다. 결측 여부 자체가 신호다.
-- 직업군 코드에 의미를 부여하지 않는다(코드북 미확보, 원핫만).
+- 직업군 코드북은 `데이터사용컬럼정의서.xlsx` [코드] 시트로 확보 — 고용형태 3분류(급여소득·자영업·무직)로 사용한다.
 - 유형 라벨은 개인 신용 판정이 아니라 **정책 아웃리치 우선순위**다.
 
 ## 실서비스 연동
