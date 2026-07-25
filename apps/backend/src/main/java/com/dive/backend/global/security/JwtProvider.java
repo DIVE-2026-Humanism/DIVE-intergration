@@ -140,9 +140,15 @@ public class JwtProvider {
         Object memberIdObj = claims.get("memberId");
         Long memberId = memberIdObj != null ? ((Number) memberIdObj).longValue() : null;
 
+        // subject(email)가 null/빈 값이어도 User 생성자가 거부하지 않도록 memberId 기반으로 대체
+        String username = claims.getSubject();
+        if (username == null || username.isBlank()) {
+            username = memberId != null ? "member_" + memberId : "unknown";
+        }
+
         PrincipalDetails principal = new PrincipalDetails(
                 memberId,
-                claims.getSubject(),
+                username,
                 "",
                 authorities
         );

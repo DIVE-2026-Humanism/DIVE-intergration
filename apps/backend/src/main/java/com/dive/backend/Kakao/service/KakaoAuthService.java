@@ -140,7 +140,7 @@ public class KakaoAuthService {
 
     private Member updateProfile(Member member, KakaoUserResponse kakaoUser) {
         member.updateProfile(extractNickname(kakaoUser), extractEmail(kakaoUser));
-        return member;
+        return memberRepository.save(member);
     }
 
     /**
@@ -154,11 +154,17 @@ public class KakaoAuthService {
         return kakaoUser.kakaoAccount().profile().nickname();
     }
 
+    /**
+     * 카카오 계정이 이메일 동의를 안 하면 email이 null이다. 그런데 이메일을 principal username /
+     * JWT subject / refresh 매핑 키로 쓰기 때문에 null이면 로그인 이후 흐름이 전부 깨진다.
+     * 따라서 이메일이 없으면 kakaoId 기반의 고유한 합성 이메일을 부여한다.
+     */
     private String extractEmail(KakaoUserResponse kakaoUser) {
-        if (kakaoUser.kakaoAccount() == null) {
-            return null;
+        String email = kakaoUser.kakaoAccount() == null ? null : kakaoUser.kakaoAccount().email();
+        if (email == null || email.isBlank()) {
+            return "kakao_" + kakaoUser.id() + "@kakao.local";
         }
-        return kakaoUser.kakaoAccount().email();
+        return email;
     }
 
     // ------------------------------------------------------------

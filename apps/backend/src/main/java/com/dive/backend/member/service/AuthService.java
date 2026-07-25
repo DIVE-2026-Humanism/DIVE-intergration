@@ -91,8 +91,10 @@ public class AuthService {
         refreshTokenRepository.deleteById(refreshToken); // 회전: 재사용 방지
 
         GrantedAuthority authority = new SimpleGrantedAuthority("ROLE_" + member.getRole().name());
+        // 소셜 로그인 회원은 password가 null이라 User 생성자가 거부한다 → 빈 문자열로 대체
+        String password = member.getPassword() != null ? member.getPassword() : "";
         Authentication authentication = new UsernamePasswordAuthenticationToken(
-                new PrincipalDetails(member.getId(), member.getEmail(), member.getPassword(), List.of(authority)),
+                new PrincipalDetails(member.getId(), member.getEmail(), password, List.of(authority)),
                 "",
                 List.of(authority)
         );

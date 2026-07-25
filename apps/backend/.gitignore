@@ -8,6 +8,10 @@ build/
 .env
 env.example
 
+# Firebase service account (secret — do not commit)
+firebase-service-account.json
+src/main/resources/firebase-service-account.json
+doc
 ### STS ###
 .apt_generated
 .classpath
