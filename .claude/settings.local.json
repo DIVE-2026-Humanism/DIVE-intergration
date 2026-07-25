@@ -54,7 +54,11 @@
       "Bash(python3 *)",
       "Bash(pip install *)",
       "Bash(/tmp/claude-1000/-home-user-github-DIVE-intergration/2c9e595c-0f9e-43ff-9e87-882194a361a2/scratchpad/venv/bin/python -)",
-      "Bash(/tmp/claude-1000/-home-user-github-DIVE-intergration/2c9e595c-0f9e-43ff-9e87-882194a361a2/scratchpad/venv/bin/pip install *)"
+      "Bash(/tmp/claude-1000/-home-user-github-DIVE-intergration/2c9e595c-0f9e-43ff-9e87-882194a361a2/scratchpad/venv/bin/pip install *)",
+      "Bash(python *)",
+      "Bash(node scripts/validate_palette.js \"#2a78d6,#eb6834\" --mode light --surface \"#FBFCFC\")",
+      "Bash(node scripts/validate_palette.js \"#3987e5,#d95926\" --mode dark --surface \"#131A1E\")",
+      "Artifact"
     ]
   }
 }

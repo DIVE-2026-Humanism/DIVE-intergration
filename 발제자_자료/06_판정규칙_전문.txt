@@ -1,0 +1,99 @@
+# 문진 축소 모델 판정 규칙 (DecisionTree, max_depth=5)
+# 라벨: E1=안정형, E2=주택대출형, E3=저부채형, E4=금융이력부족형, E5=대출부담형, E6=위기형
+# 문항 7개: ['employment_type', 'income_band', 'consumption_band', 'repay_band', 'debt_band', 'job_turnover', 'distress_flag']
+# 클래스 순서: ['E1', 'E2', 'E3', 'E4', 'E5', 'E6']
+
+|--- num__distress_flag <= 0.50
+|   |--- num__debt_band <= 1.50
+|   |   |--- num__income_band <= 2.50
+|   |   |   |--- num__consumption_band <= 2.50
+|   |   |   |   |--- num__repay_band <= 2.50
+|   |   |   |   |   |--- class: E4
+|   |   |   |   |--- num__repay_band >  2.50
+|   |   |   |   |   |--- class: E5
+|   |   |   |--- num__consumption_band >  2.50
+|   |   |   |   |--- num__repay_band <= 2.50
+|   |   |   |   |   |--- class: E3
+|   |   |   |   |--- num__repay_band >  2.50
+|   |   |   |   |   |--- class: E5
+|   |   |--- num__income_band >  2.50
+|   |   |   |--- num__income_band <= 3.50
+|   |   |   |   |--- num__consumption_band <= 1.50
+|   |   |   |   |   |--- class: E1
+|   |   |   |   |--- num__consumption_band >  1.50
+|   |   |   |   |   |--- class: E3
+|   |   |   |--- num__income_band >  3.50
+|   |   |   |   |--- num__consumption_band <= 3.50
+|   |   |   |   |   |--- class: E1
+|   |   |   |   |--- num__consumption_band >  3.50
+|   |   |   |   |   |--- class: E2
+|   |--- num__debt_band >  1.50
+|   |   |--- num__income_band <= 3.50
+|   |   |   |--- num__repay_band <= 2.50
+|   |   |   |   |--- num__income_band <= 2.50
+|   |   |   |   |   |--- class: E5
+|   |   |   |   |--- num__income_band >  2.50
+|   |   |   |   |   |--- class: E2
+|   |   |   |--- num__repay_band >  2.50
+|   |   |   |   |--- num__income_band <= 1.50
+|   |   |   |   |   |--- class: E5
+|   |   |   |   |--- num__income_band >  1.50
+|   |   |   |   |   |--- class: E5
+|   |   |--- num__income_band >  3.50
+|   |   |   |--- num__repay_band <= 1.50
+|   |   |   |   |--- num__consumption_band <= 3.50
+|   |   |   |   |   |--- class: E2
+|   |   |   |   |--- num__consumption_band >  3.50
+|   |   |   |   |   |--- class: E2
+|   |   |   |--- num__repay_band >  1.50
+|   |   |   |   |--- cat__employment_type_자영업 <= 0.50
+|   |   |   |   |   |--- class: E2
+|   |   |   |   |--- cat__employment_type_자영업 >  0.50
+|   |   |   |   |   |--- class: E2
+|--- num__distress_flag >  0.50
+|   |--- num__consumption_band <= 1.50
+|   |   |--- num__consumption_band <= 0.50
+|   |   |   |--- num__job_turnover <= 4.50
+|   |   |   |   |--- cat__employment_type_자영업 <= 0.50
+|   |   |   |   |   |--- class: E6
+|   |   |   |   |--- cat__employment_type_자영업 >  0.50
+|   |   |   |   |   |--- class: E6
+|   |   |   |--- num__job_turnover >  4.50
+|   |   |   |   |--- num__repay_band <= 2.00
+|   |   |   |   |   |--- class: E2
+|   |   |   |   |--- num__repay_band >  2.00
+|   |   |   |   |   |--- class: E6
+|   |   |--- num__consumption_band >  0.50
+|   |   |   |--- num__income_band <= 3.50
+|   |   |   |   |--- cat__employment_type_자영업 <= 0.50
+|   |   |   |   |   |--- class: E6
+|   |   |   |   |--- cat__employment_type_자영업 >  0.50
+|   |   |   |   |   |--- class: E6
+|   |   |   |--- num__income_band >  3.50
+|   |   |   |   |--- num__repay_band <= 1.50
+|   |   |   |   |   |--- class: E6
+|   |   |   |   |--- num__repay_band >  1.50
+|   |   |   |   |   |--- class: E6
+|   |--- num__consumption_band >  1.50
+|   |   |--- num__income_band <= 3.50
+|   |   |   |--- num__repay_band <= 2.50
+|   |   |   |   |--- num__consumption_band <= 3.50
+|   |   |   |   |   |--- class: E6
+|   |   |   |   |--- num__consumption_band >  3.50
+|   |   |   |   |   |--- class: E5
+|   |   |   |--- num__repay_band >  2.50
+|   |   |   |   |--- num__income_band <= 1.50
+|   |   |   |   |   |--- class: E6
+|   |   |   |   |--- num__income_band >  1.50
+|   |   |   |   |   |--- class: E6
+|   |   |--- num__income_band >  3.50
+|   |   |   |--- num__repay_band <= 2.50
+|   |   |   |   |--- num__consumption_band <= 3.50
+|   |   |   |   |   |--- class: E1
+|   |   |   |   |--- num__consumption_band >  3.50
+|   |   |   |   |   |--- class: E2
+|   |   |   |--- num__repay_band >  2.50
+|   |   |   |   |--- num__debt_band <= 1.50
+|   |   |   |   |   |--- class: E6
+|   |   |   |   |--- num__debt_band >  1.50
+|   |   |   |   |   |--- class: E6

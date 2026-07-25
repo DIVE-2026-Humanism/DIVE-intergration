@@ -1,0 +1,823 @@
+<title>소득 기준의 사각지대 — 부산 청년 경제안정성 진단</title>
+<style>
+  :root {
+    color-scheme: light;
+    --page:      #EFF2F2;
+    --surface:   #FBFCFC;
+    --ink:       #101A22;
+    --ink-2:     #46555F;
+    --ink-3:     #7C8A92;
+    --rule:      #D7DDDE;
+    --rule-soft: #E5E9EA;
+    --accent:    #0E5A5E;
+    --stable:    #2a78d6;
+    --vuln:      #eb6834;
+    --shadow:    0 1px 2px rgba(16, 26, 34, .04), 0 8px 24px -16px rgba(16, 26, 34, .18);
+
+    --sans: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont,
+            "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", system-ui, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, "Cascadia Mono", "DejaVu Sans Mono",
+            "Liberation Mono", monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --page:      #0C1114;
+      --surface:   #141B1F;
+      --ink:       #ECF2F3;
+      --ink-2:     #A7B5BB;
+      --ink-3:     #7B8990;
+      --rule:      #242F34;
+      --rule-soft: #1D262A;
+      --accent:    #57B8B2;
+      --stable:    #3987e5;
+      --vuln:      #d95926;
+      --shadow:    0 1px 2px rgba(0, 0, 0, .3), 0 8px 24px -16px rgba(0, 0, 0, .6);
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --page:      #0C1114;
+    --surface:   #141B1F;
+    --ink:       #ECF2F3;
+    --ink-2:     #A7B5BB;
+    --ink-3:     #7B8990;
+    --rule:      #242F34;
+    --rule-soft: #1D262A;
+    --accent:    #57B8B2;
+    --stable:    #3987e5;
+    --vuln:      #d95926;
+    --shadow:    0 1px 2px rgba(0, 0, 0, .3), 0 8px 24px -16px rgba(0, 0, 0, .6);
+  }
+
+  body {
+    background: var(--page);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.75;
+    -webkit-font-smoothing: antialiased;
+    letter-spacing: -0.003em;
+  }
+
+  .wrap {
+    max-width: 61rem;
+    margin: 0 auto;
+    padding: clamp(2.5rem, 6vw, 5.5rem) clamp(1.15rem, 4vw, 2.5rem) 5rem;
+    display: flex;
+    flex-direction: column;
+    gap: clamp(3rem, 6vw, 4.75rem);
+  }
+
+  /* ---------- type scale ---------- */
+  h1, h2, h3 { text-wrap: balance; letter-spacing: -0.035em; font-weight: 800; margin: 0; }
+  h1 { font-size: clamp(2rem, 5.4vw, 3.35rem); line-height: 1.14; }
+  h2 { font-size: clamp(1.4rem, 3vw, 1.85rem); line-height: 1.25; }
+  h3 { font-size: 1.0625rem; line-height: 1.4; letter-spacing: -0.02em; font-weight: 700; }
+  p  { margin: 0; max-width: 40em; }
+
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: .6875rem;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: .625rem;
+  }
+  .eyebrow::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--rule);
+  }
+  .deck { font-size: clamp(1.0625rem, 2vw, 1.1875rem); color: var(--ink-2); line-height: 1.68; }
+  .note { font-family: var(--mono); font-size: .75rem; line-height: 1.6; color: var(--ink-3); letter-spacing: 0; max-width: 46em; }
+
+  /* ---------- masthead ---------- */
+  .masthead { display: flex; flex-direction: column; gap: 1.35rem; }
+  .masthead .meta {
+    font-family: var(--mono);
+    font-size: .6875rem;
+    letter-spacing: .13em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem 1rem;
+    padding-bottom: 1.35rem;
+    border-bottom: 2px solid var(--ink);
+  }
+  .masthead .meta b { color: var(--accent); font-weight: 600; }
+  mark {
+    background: linear-gradient(transparent 62%, color-mix(in srgb, var(--vuln) 30%, transparent) 62%);
+    color: inherit;
+  }
+
+  /* ---------- hero figure ---------- */
+  .hero {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-left: 3px solid var(--vuln);
+    border-radius: 3px;
+    box-shadow: var(--shadow);
+    padding: clamp(1.5rem, 3.5vw, 2.25rem);
+    display: grid;
+    gap: clamp(1.5rem, 4vw, 2.75rem);
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+  @media (min-width: 46rem) { .hero { grid-template-columns: minmax(0, 15rem) 1fr; } }
+  .hero-figure { display: flex; flex-direction: column; gap: .25rem; }
+  .hero-figure .value {
+    font-size: clamp(3.5rem, 10vw, 4.75rem);
+    font-weight: 800;
+    line-height: .92;
+    letter-spacing: -0.055em;
+    color: var(--vuln);
+  }
+  .hero-figure .label { font-size: .9375rem; color: var(--ink-2); line-height: 1.5; }
+  .stats { display: grid; gap: 1.125rem 1.75rem; grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr)); }
+  .stat { display: flex; flex-direction: column; gap: .1rem; border-top: 1px solid var(--rule); padding-top: .7rem; }
+  .stat .k { font-family: var(--mono); font-size: .6875rem; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); }
+  .stat .v { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.03em; line-height: 1.2; }
+  .stat .d { font-size: .8125rem; color: var(--ink-2); line-height: 1.45; }
+
+  /* ---------- sections ---------- */
+  section { display: flex; flex-direction: column; gap: 1.35rem; }
+  section > .eyebrow { margin-bottom: -.45rem; }
+
+  /* ---------- tables ---------- */
+  .table-scroll { overflow-x: auto; border: 1px solid var(--rule); border-radius: 3px; background: var(--surface); }
+  table { border-collapse: collapse; width: 100%; font-size: .9375rem; min-width: 34rem; }
+  caption {
+    text-align: left;
+    font-family: var(--mono);
+    font-size: .6875rem;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    padding: .9rem 1.1rem .55rem;
+  }
+  th, td { padding: .58rem 1.1rem; text-align: right; border-top: 1px solid var(--rule-soft); }
+  th:first-child, td:first-child { text-align: left; }
+  thead th {
+    font-family: var(--mono);
+    font-size: .6875rem;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    font-weight: 600;
+    border-top: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+    white-space: nowrap;
+  }
+  tbody td { font-variant-numeric: tabular-nums; }
+  tbody td:first-child { font-variant-numeric: normal; }
+  .gap-cell { font-weight: 700; white-space: nowrap; }
+  .worse { color: var(--vuln); }
+  .same  { color: var(--ink-2); }
+  tbody tr.spacer td { border-top: 1px solid var(--rule); padding-top: .58rem; }
+  .row-label { color: var(--ink); }
+  .row-sub { display: block; font-family: var(--mono); font-size: .6875rem; color: var(--ink-3); letter-spacing: 0; }
+
+  /* ---------- chart ---------- */
+  .chart-block {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    padding: clamp(1.15rem, 3vw, 1.75rem);
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    box-shadow: var(--shadow);
+  }
+  .legend { display: flex; flex-wrap: wrap; gap: .35rem 1.25rem; font-size: .8125rem; color: var(--ink-2); }
+  .legend span { display: inline-flex; align-items: center; gap: .45rem; }
+  .swatch { width: .75rem; height: .75rem; border-radius: 2px; flex: none; }
+  .sw-stable { background: var(--stable); }
+  .sw-vuln { background: var(--vuln); }
+
+  .panels { display: grid; gap: clamp(1.5rem, 4vw, 2.25rem); grid-template-columns: 1fr; }
+  @media (min-width: 44rem) { .panels { grid-template-columns: 1fr 1fr; } }
+
+  figure { margin: 0; display: flex; flex-direction: column; gap: .85rem; }
+  figcaption { font-size: .9375rem; font-weight: 700; letter-spacing: -0.02em; }
+  figcaption .unit { font-family: var(--mono); font-size: .6875rem; font-weight: 400; color: var(--ink-3); letter-spacing: .06em; margin-left: .45rem; text-transform: uppercase; }
+
+  .plot { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: .55rem; }
+  .yaxis { position: relative; width: 2.9rem; height: 15rem; }
+  .yaxis span {
+    position: absolute; right: 0; transform: translateY(-50%);
+    font-family: var(--mono); font-size: .6875rem; color: var(--ink-3);
+    font-variant-numeric: tabular-nums; letter-spacing: 0;
+  }
+  .field { position: relative; height: 15rem; }
+  .gridline { position: absolute; left: 0; right: 0; height: 1px; background: var(--rule-soft); }
+  .gridline.base { background: var(--rule); transform: translateY(-1px); }
+  .bars { position: absolute; inset: 0; display: flex; align-items: flex-end; }
+  .slot { position: relative; flex: 1; height: 100%; display: flex; align-items: flex-end; justify-content: center; background: none; border: 0; padding: 0 2px; cursor: default; font: inherit; color: inherit; }
+  .bar { width: min(24px, 100%); border-radius: 4px 4px 0 0; transition: filter .15s ease; }
+  .slot[data-cls="stable"] .bar { background: var(--stable); }
+  .slot[data-cls="vuln"] .bar { background: var(--vuln); }
+  .slot:hover .bar, .slot:focus-visible .bar { filter: brightness(1.12) saturate(1.1); }
+  .slot:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 2px; }
+  .tip-label {
+    position: absolute; left: 50%; transform: translateX(-50%);
+    font-family: var(--mono); font-size: .6875rem; font-weight: 600;
+    color: var(--ink); white-space: nowrap; font-variant-numeric: tabular-nums; letter-spacing: 0;
+  }
+  .xaxis { display: flex; padding-left: 3.45rem; }
+  .xaxis span {
+    flex: 1; text-align: center; font-family: var(--mono); font-size: .75rem;
+    color: var(--ink-2); letter-spacing: .04em;
+  }
+
+  #tooltip {
+    position: fixed; z-index: 20; pointer-events: none; opacity: 0;
+    transition: opacity .12s ease;
+    background: var(--ink); color: var(--page);
+    border-radius: 3px; padding: .5rem .7rem;
+    font-size: .75rem; line-height: 1.5; white-space: nowrap;
+    box-shadow: 0 6px 20px -8px rgba(0,0,0,.5);
+  }
+  #tooltip[data-show="1"] { opacity: 1; }
+  #tooltip b { font-size: .8125rem; }
+  #tooltip .tt-row { font-family: var(--mono); font-variant-numeric: tabular-nums; letter-spacing: 0; opacity: .85; }
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; animation: none !important; }
+  }
+
+  /* ---------- two-face cards ---------- */
+  .cards { display: grid; gap: 1.25rem; grid-template-columns: 1fr; }
+  @media (min-width: 44rem) { .cards { grid-template-columns: 1fr 1fr; } }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-top: 3px solid var(--vuln);
+    border-radius: 3px;
+    padding: 1.35rem;
+    display: flex; flex-direction: column; gap: 1.1rem;
+    box-shadow: var(--shadow);
+  }
+  .card-head { display: flex; flex-direction: column; gap: .3rem; }
+  .card-head .code { font-family: var(--mono); font-size: .6875rem; letter-spacing: .12em; color: var(--ink-3); text-transform: uppercase; }
+  .card-head .n { font-family: var(--mono); font-size: .75rem; color: var(--ink-2); font-variant-numeric: tabular-nums; letter-spacing: 0; }
+  .meters { display: flex; flex-direction: column; gap: .8rem; }
+  .meter { display: flex; flex-direction: column; gap: .3rem; }
+  .meter-top { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; font-size: .8125rem; }
+  .meter-top .mv { font-family: var(--mono); font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: 0; }
+  .track { height: 6px; border-radius: 3px; background: color-mix(in srgb, var(--vuln) 16%, transparent); overflow: hidden; }
+  .fill { height: 100%; border-radius: 3px; background: var(--vuln); }
+  .card dl { margin: 0; display: grid; grid-template-columns: 1fr auto; gap: .35rem 1rem; font-size: .8125rem; border-top: 1px solid var(--rule); padding-top: .8rem; }
+  .card dt { color: var(--ink-2); }
+  .card dd { margin: 0; text-align: right; font-family: var(--mono); font-weight: 600; font-variant-numeric: tabular-nums; letter-spacing: 0; }
+  .rx { font-size: .875rem; color: var(--ink-2); border-top: 1px solid var(--rule); padding-top: .8rem; line-height: 1.6; }
+  .rx b { color: var(--ink); font-weight: 700; }
+
+  /* ---------- callout ---------- */
+  .callout {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-left: 3px solid var(--accent);
+    border-radius: 3px;
+    padding: 1.35rem clamp(1.15rem, 3vw, 1.6rem);
+    display: flex; flex-direction: column; gap: .6rem;
+  }
+  .callout .big { font-size: clamp(1.15rem, 2.6vw, 1.4rem); font-weight: 800; letter-spacing: -0.03em; line-height: 1.35; text-wrap: balance; }
+  .callout p { font-size: .9375rem; color: var(--ink-2); }
+
+  /* ---------- caveats ---------- */
+  .caveats { display: flex; flex-direction: column; gap: .85rem; padding: 0; margin: 0; list-style: none; }
+  .caveats li {
+    display: grid; grid-template-columns: auto 1fr; gap: .9rem;
+    font-size: .9375rem; color: var(--ink-2); line-height: 1.65;
+    border-top: 1px solid var(--rule-soft); padding-top: .85rem;
+  }
+  .caveats li::before {
+    content: attr(data-tag);
+    font-family: var(--mono); font-size: .625rem; letter-spacing: .1em; text-transform: uppercase;
+    color: var(--accent); font-weight: 600; padding-top: .3rem; white-space: nowrap;
+  }
+  .caveats b { color: var(--ink); font-weight: 700; }
+
+  footer {
+    border-top: 2px solid var(--ink);
+    padding-top: 1.35rem;
+    display: flex; flex-direction: column; gap: .75rem;
+  }
+  code {
+    font-family: var(--mono); font-size: .75rem;
+    background: var(--surface); border: 1px solid var(--rule);
+    border-radius: 2px; padding: .1rem .35rem; letter-spacing: 0;
+  }
+  .src { display: flex; flex-direction: column; gap: .3rem; }
+</style>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="meta">
+      <span>부산 청년 경제안정성 진단</span>
+      <span>KCB 합성데이터 <b>100,816행</b></span>
+      <span>전수 분석 · seed 42</span>
+      <span>2026-07-26</span>
+    </div>
+    <h1>취약 청년 10명 중 4명은,<br>소득만 보면 <mark>“지원 대상 아님”</mark>이다</h1>
+    <p class="deck">
+      종합점수 하위 25%에 속한 청년 25,248명 가운데 10,926명은 기준 중위소득 100%를 넘는다.
+      소득을 선정 기준으로 쓰는 현행 방식에서는 <strong>존재 자체가 관측되지 않는 집단</strong>이다.
+    </p>
+  </header>
+
+  <div class="hero">
+    <div class="hero-figure">
+      <span class="value">43.3%</span>
+      <span class="label">하위 25% 취약 청년 중<br>현행 소득 기준으로는 걸러지지 않는 비율</span>
+    </div>
+    <div class="stats">
+      <div class="stat">
+        <span class="k">사각지대 규모</span>
+        <span class="v">10,926명</span>
+        <span class="d">전체 표본의 10.8%</span>
+      </div>
+      <div class="stat">
+        <span class="k">중위 100% 초과 인구 중</span>
+        <span class="v">17.0%</span>
+        <span class="d">64,299명 중 10,926명</span>
+      </div>
+      <div class="stat">
+        <span class="k">현행 소득 기준 대상</span>
+        <span class="v">913명</span>
+        <span class="d">중위 60% 이하 · 전체의 0.9%</span>
+      </div>
+      <div class="stat">
+        <span class="k">독립 검증</span>
+        <span class="v">2가지 방법</span>
+        <span class="d">규칙 기반 12.8% · 잠재모델 10.8%</span>
+      </div>
+    </div>
+  </div>
+
+  <section>
+    <div class="eyebrow">관측 — 사각지대의 초상</div>
+    <h2>소득은 평균보다 높다. 나머지 전부가 무너져 있다.</h2>
+    <p>
+      사각지대 정의는 두 조건의 교집합이다. ① 기준 중위소득 100% 초과, ② 종합점수 하위 25%.
+      이 집단의 연소득은 표본 평균보다 <strong>오히려 8.5% 높다</strong>. 소득이 취약의 대리변수가 아니라는 뜻이다.
+    </p>
+    <div class="table-scroll">
+      <table>
+        <caption>사각지대(10,926명) vs 전체(100,816명) — 평균</caption>
+        <thead>
+          <tr><th scope="col">지표</th><th scope="col">사각지대</th><th scope="col">전체</th><th scope="col">차이</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="row-label">추정 연소득<span class="row-sub">천원 / 년</span></td>
+            <td>39,673</td><td>36,556</td><td class="gap-cell same">↑ 1.09배</td>
+          </tr>
+          <tr class="spacer">
+            <td class="row-label">종합점수<span class="row-sub">0~100</span></td>
+            <td>11.5</td><td>49.9</td><td class="gap-cell worse">↓ 38.4점</td>
+          </tr>
+          <tr>
+            <td class="row-label">DSR<span class="row-sub">연 상환액 ÷ 연소득</span></td>
+            <td>0.440</td><td>0.111</td><td class="gap-cell worse">↑ 4.0배</td>
+          </tr>
+          <tr>
+            <td class="row-label">다중채무 보유율<span class="row-sub">대출 3건 이상</span></td>
+            <td>59.0%</td><td>15.3%</td><td class="gap-cell worse">↑ 3.9배</td>
+          </tr>
+          <tr>
+            <td class="row-label">현금서비스 이용률<span class="row-sub">최근 12개월</span></td>
+            <td>33.1%</td><td>10.0%</td><td class="gap-cell worse">↑ 3.3배</td>
+          </tr>
+          <tr>
+            <td class="row-label">신용평점<span class="row-sub">KCB</span></td>
+            <td>670</td><td>823</td><td class="gap-cell worse">↓ 152점</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">
+      판정 기준: 보건복지부 고시 제2025-135호 — 2026년 기준 중위소득 1인가구 월 2,564,238원.
+      정부 고시 절대 기준이므로 라벨 체계와 독립적으로 성립한다(순환논리 없음).
+    </p>
+  </section>
+
+  <section>
+    <div class="eyebrow">역설 — 소득과 안정성의 디커플링</div>
+    <h2>왜 소득 기준이 실패하는가</h2>
+    <p>
+      6유형의 종합점수는 E1에서 E6으로 <strong>단조 감소</strong>한다. 그런데 같은 순서로 평균 연소득을 그리면
+      전혀 따라오지 않는다. <strong>최하위 E6 위기형의 소득이 최상위 E1 안정형보다 높다.</strong>
+      소득 한 축으로는 이 두 집단이 구분되지 않는다.
+    </p>
+
+    <div class="chart-block">
+      <div class="legend">
+        <span><i class="swatch sw-stable"></i>안정 (E1~E3)</span>
+        <span><i class="swatch sw-vuln"></i>취약 (E4~E6)</span>
+      </div>
+      <div class="panels">
+        <figure>
+          <figcaption>종합점수<span class="unit">0~100 · 단조 감소</span></figcaption>
+          <div class="plot">
+            <div class="yaxis" data-axis="score"></div>
+            <div class="field" data-field="score"></div>
+          </div>
+          <div class="xaxis" data-x="score"></div>
+        </figure>
+        <figure>
+          <figcaption>평균 연소득<span class="unit">천원 · 순서 무관</span></figcaption>
+          <div class="plot">
+            <div class="yaxis" data-axis="income"></div>
+            <div class="field" data-field="income"></div>
+          </div>
+          <div class="xaxis" data-x="income"></div>
+        </figure>
+      </div>
+      <p class="note">막대에 커서를 올리면 유형별 상세가 표시된다. 전체 수치는 아래 표에 있다.</p>
+    </div>
+
+    <div class="table-scroll">
+      <table>
+        <caption>유형 프로파일 — 표 보기</caption>
+        <thead>
+          <tr>
+            <th scope="col">유형</th><th scope="col">규모</th><th scope="col">비중</th>
+            <th scope="col">종합점수</th><th scope="col">연소득</th><th scope="col">DSR</th>
+            <th scope="col">신용평점</th><th scope="col">다중채무</th>
+          </tr>
+        </thead>
+        <tbody data-profile-table></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <div class="eyebrow">분기 — 취약의 두 얼굴</div>
+    <h2>“취약 청년” 하나로 묶으면 둘 다 실패한다</h2>
+    <p>
+      취약 대분류의 대부분을 차지하는 두 유형은 <strong>정반대 이유로</strong> 취약하다.
+      E4는 기록이 없어서, E5는 빚이 많아서다. 같은 처방을 주면 양쪽 모두 빗나간다.
+    </p>
+    <div class="cards">
+      <div class="card">
+        <div class="card-head">
+          <span class="code">E4 · 취약</span>
+          <h3>금융이력부족형</h3>
+          <span class="n">23,186명 · 전체의 23.0% · 종합점수 45.3</span>
+        </div>
+        <div class="meters">
+          <div class="meter">
+            <div class="meter-top"><span>Thin filer</span><span class="mv">14.5%</span></div>
+            <div class="track"><div class="fill" style="width: 24.2%"></div></div>
+          </div>
+          <div class="meter">
+            <div class="meter-top"><span>다중채무 보유</span><span class="mv">2.2%</span></div>
+            <div class="track"><div class="fill" style="width: 3.7%"></div></div>
+          </div>
+          <div class="meter">
+            <div class="meter-top"><span>현금서비스 이용</span><span class="mv">1.0%</span></div>
+            <div class="track"><div class="fill" style="width: 1.7%"></div></div>
+          </div>
+        </div>
+        <dl>
+          <dt>신용평점</dt><dd>812</dd>
+          <dt>DSR</dt><dd>0.022</dd>
+          <dt>평균 연소득</dt><dd>29,809</dd>
+        </dl>
+        <p class="rx"><b>처방:</b> 신용 형성 지원 · 첫 금융거래 · 소득 증빙 보조.
+          채무조정을 제안하면 조정할 채무 자체가 없다.</p>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <span class="code">E5 · 취약</span>
+          <h3>대출부담형</h3>
+          <span class="n">20,848명 · 전체의 20.7% · 종합점수 18.3</span>
+        </div>
+        <div class="meters">
+          <div class="meter">
+            <div class="meter-top"><span>Thin filer</span><span class="mv">5.4%</span></div>
+            <div class="track"><div class="fill" style="width: 9.0%"></div></div>
+          </div>
+          <div class="meter">
+            <div class="meter-top"><span>다중채무 보유</span><span class="mv">45.1%</span></div>
+            <div class="track"><div class="fill" style="width: 75.2%"></div></div>
+          </div>
+          <div class="meter">
+            <div class="meter-top"><span>현금서비스 이용</span><span class="mv">23.1%</span></div>
+            <div class="track"><div class="fill" style="width: 38.5%"></div></div>
+          </div>
+        </div>
+        <dl>
+          <dt>신용평점</dt><dd>661</dd>
+          <dt>DSR</dt><dd>0.223</dd>
+          <dt>평균 연소득</dt><dd>33,109</dd>
+        </dl>
+        <p class="rx"><b>처방:</b> 채무조정 · 고금리 대환 · 상환부담 완화.
+          신용 형성 프로그램은 이미 필요 단계를 지났다.</p>
+      </div>
+    </div>
+    <p class="note">막대 길이는 0~60% 공통 축이다. Thin filer 전체 평균은 6.6%, 다중채무 15.3%, 현금서비스 10.0%.</p>
+  </section>
+
+  <section>
+    <div class="eyebrow">시점 — 개입 창구</div>
+    <h2>연체가 찍힌 뒤에는 이미 늦다</h2>
+    <div class="callout">
+      <span class="big">연체 이력 보유자 1,785명 중 1,785명이 E6 위기형이다. 100%.</span>
+      <p>
+        E1~E5에는 연체자가 <strong>한 명도 없다</strong>. 즉 연체는 유형을 가르는 신호가 아니라
+        이미 확정된 결과다. 반면 E5 대출부담형 20,848명은 연체 0명인 상태에서
+        다중채무 45.1% · 현금서비스 23.1% · DSR 0.223을 이미 기록하고 있다.
+        <strong>연체 이전에 식별 가능한 개입 창구가 2만 명 규모로 존재한다</strong>는 뜻이다.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <div class="eyebrow">실행 — 서비스 성립 조건</div>
+    <h2>KCB 42변수 없이, 7문항으로 재현된다</h2>
+    <p>
+      실제 사용자는 금융 마이크로데이터를 들고 오지 않는다. 42변수로 만든 라벨을
+      사용자가 답할 수 있는 7문항(고용형태 · 소득 · 소비 · 상환 · 부채 · 이직 · 연체)으로 축소했다.
+    </p>
+    <div class="stats">
+      <div class="stat">
+        <span class="k">문항 수</span><span class="v">7개</span>
+        <span class="d">DecisionTree · max_depth 5</span>
+      </div>
+      <div class="stat">
+        <span class="k">안정·취약 판별력</span><span class="v">0.743</span>
+        <span class="d">AUC · 무작위 0.5 · 취약 재현율 72.7%</span>
+      </div>
+      <div class="stat">
+        <span class="k">6유형 정확도</span><span class="v">약 0.50</span>
+        <span class="d">5회 재실행 0.468~0.521 · 무작위의 3배</span>
+      </div>
+      <div class="stat">
+        <span class="k">연령·성별·거주지</span><span class="v">기여 0</span>
+        <span class="d">포함/제외 시 지표 소수점 셋째 자리까지 동일</span>
+      </div>
+    </div>
+    <div class="callout">
+      <span class="big">현행 청년정책이 타게팅에 쓰는 축(연령 · 거주지)은 경제 안정성을 설명하지 못했다.</span>
+      <p>
+        문진에서 연령 · 성별 · 거주지를 넣어도 빼도 accuracy와 macro F1이 소수점 셋째 자리까지 같았다.
+        그래서 문항에서 제외했다. 판정에 실제로 기여하는 축은 고용형태와 부채 · 상환 구조다.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <div class="eyebrow">검증 — 방어선 세 겹</div>
+    <h2>방법을 바꿔도 같은 집단이 나온다</h2>
+    <p>
+      단발성 분석 결과는 우연일 수 있습니다. 그래서 <strong>서로 독립적인 세 가지 방식</strong>으로
+      같은 결론에 도달하는지 확인했습니다.
+    </p>
+
+    <div class="cards">
+      <div class="card" style="border-top-color: var(--stable)">
+        <div class="card-head">
+          <span class="code">방어선 1 · 원시 지표</span>
+          <h3>모델을 안 믿어도 성립</h3>
+        </div>
+        <p class="rx" style="border-top: 0; padding-top: 0">
+          사각지대의 근거는 저희가 계산한 점수가 아니라 <b>KCB 원본 값</b>입니다.
+          DSR 4.0배 · 다중채무 3.9배 · 현금서비스 3.3배 · 신용평점 −152점.
+          종합점수를 신뢰하지 않아도 이 다섯 줄은 그대로 남습니다.
+        </p>
+      </div>
+      <div class="card" style="border-top-color: var(--stable)">
+        <div class="card-head">
+          <span class="code">방어선 2 · 조건 변경 5회</span>
+          <h3>무작위 조건에 흔들리지 않음</h3>
+        </div>
+        <p class="rx" style="border-top: 0; padding-top: 0">
+          데이터 분할과 군집 시작점을 바꿔 <b>전체 분석을 다섯 번 재실행</b>했습니다.
+          핵심 수치가 <b>43.4~45.2%</b> 범위를 유지했고, 종합점수 단조 감소는 5회 모두 통과했습니다.
+        </p>
+      </div>
+    </div>
+
+    <div class="table-scroll">
+      <table>
+        <caption>방어선 2 — 조건을 바꿔 다섯 번 재실행</caption>
+        <thead>
+          <tr><th scope="col">지표</th><th scope="col">평균</th><th scope="col">최소</th><th scope="col">최대</th><th scope="col">변동폭</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="row-label">사각지대 인원</td><td>11,087</td><td>10,926</td><td>11,396</td><td class="gap-cell same">4.3%</td></tr>
+          <tr><td class="row-label">사각지대 비율</td><td>11.00%</td><td>10.84%</td><td>11.30%</td><td class="gap-cell same">0.47%p</td></tr>
+          <tr><td class="row-label">취약층 중 비율<span class="row-sub">헤드라인 수치</span></td><td>43.99%</td><td>43.35%</td><td>45.22%</td><td class="gap-cell same">1.86%p</td></tr>
+          <tr><td class="row-label">중위 100% 초과 인구 중</td><td>17.24%</td><td>16.99%</td><td>17.72%</td><td class="gap-cell same">0.73%p</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout">
+      <span class="big">방어선 3 — 전혀 다른 분석 방법으로도 같은 집단이 나왔습니다.</span>
+      <p>
+        같은 데이터를 <strong>규칙 기반 2×2 방식</strong>과 <strong>잠재모델 방식</strong>으로 각각 분석했습니다.
+        두 방법은 공유하는 것이 거의 없습니다. 앞의 검증이 <em>같은 방법의 반복</em>이라면,
+        이건 <strong>다른 방법끼리 결론이 만난 것</strong>입니다.
+      </p>
+    </div>
+
+    <div class="table-scroll">
+      <table>
+        <caption>방어선 3 — 독립적인 두 분석 방법의 대조</caption>
+        <thead>
+          <tr>
+            <th scope="col">지표</th>
+            <th scope="col">규칙 기반</th>
+            <th scope="col">잠재모델 (채택)</th>
+            <th scope="col">전체 평균</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td class="row-label">사각지대 인원</td><td>12,882<span class="row-sub">12.8%</span></td><td>10,926<span class="row-sub">10.8%</span></td><td>—</td></tr>
+          <tr><td class="row-label">중위 100% 초과 인구 중</td><td>20.0%</td><td>17.0%</td><td>—</td></tr>
+          <tr class="spacer"><td class="row-label">사각지대 연소득<span class="row-sub">천원 / 년</span></td><td>40,346</td><td>39,673</td><td>36,556</td></tr>
+          <tr><td class="row-label">사각지대 현금서비스</td><td>33.6%</td><td>33.1%</td><td>10.0%</td></tr>
+          <tr><td class="row-label">사각지대 신용평점</td><td>709</td><td>670</td><td>823</td></tr>
+          <tr><td class="row-label">소득 기준 지원 대상자</td><td>913명</td><td>913명</td><td>—</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="note">
+      두 방법 모두 “소득은 평균보다 높은데 위험지표는 3배 이상 나쁜 집단”을 재현한다.
+      발견이 특정 분석 기법의 산물이 아니라는 뜻이다.
+    </p>
+  </section>
+
+  <section>
+    <div class="eyebrow">유보 — 주장의 한계</div>
+    <h2>과장하지 않고 말하는 법</h2>
+    <ul class="caveats">
+      <li data-tag="군집">
+        적정 군집 수를 재는 두 지표가 <b>정반대를 가리킨다</b> — BIC는 12개 이상, 실루엣은 2개.
+        <b>어느 쪽도 6을 지목하지 않는다.</b> 실루엣은 0.058이다.
+        “데이터가 6개 집단을 발견했다”가 아니라 <b>“정책 우선순위를 위해 6단계로 나눴다”</b>고 말해야 한다.
+        참고로 데이터에서 가장 뚜렷한 경계는 <b>주택담보대출 보유 여부</b>이지 경제적 안정/취약이 아니었다.
+      </li>
+      <li data-tag="유형규모">
+        <b>유형별 인원수는 인용하면 안 된다.</b> 조건을 바꿔 5회 재실행하면 E2는 4,947~25,569명,
+        E3는 7,989~27,150명으로 움직인다. 대분류 비율도 45.3~50.8%다.
+        반면 <b>E4 금융이력부족형과 E6 위기형은 거의 흔들리지 않아</b> “취약의 두 얼굴” 주장은 유효하다.
+      </li>
+      <li data-tag="차원">
+        PCA 누적 90% 설명에 32개 입력 중 <b>19개 성분</b>이 필요했다. 잠재 요인 구조가 약하다는 뜻이다.
+      </li>
+      <li data-tag="순환">
+        외부 타당도는 연령대 eta² <b>0.075</b> · 자가여부 0.050 수준(small~medium)이다.
+        <b>multi_debt · pir · income_percentile_busan</b>은 잠재 입력이거나 그 파생이므로 타당성 근거로 쓰면 안 된다.
+      </li>
+      <li data-tag="데이터">
+        합성데이터다. 연체가 E6에 100% 집중된 것은 합성 과정의 특성일 수 있으므로,
+        <b>실데이터에서 재확인이 필요한 항목</b>으로 남겨 둔다.
+      </li>
+      <li data-tag="용도">
+        유형 라벨은 개인 신용 판정이 아니라 <b>정책 아웃리치 우선순위</b>다.
+        문진 확신도 0.5 미만이 44.6%이므로, 그 구간은 유형을 단독 표시하지 않고 추가 질문을 트리거한다.
+      </li>
+    </ul>
+  </section>
+
+  <footer>
+    <div class="src note">
+      <span>재현: <code>python -m hybrid.src.run --input "important data/(합성데이터)종합해커톤.csv" --outdir hybrid/outputs/ --seed 42</code></span>
+      <span>전수 10만 행 약 25초 · 동일 시드 2회 실행 시 산출물 바이트 단위 동일</span>
+      <span>근거 리포트: hybrid/outputs/validation_report.md · segments.csv · fitted_params.json</span>
+      <span>기준 중위소득 출처: 보건복지부 고시 제2025-135호 (2025.7.31. 제77차 중앙생활보장위원회 의결)</span>
+    </div>
+  </footer>
+</div>
+
+<div id="tooltip" aria-hidden="true"></div>
+
+<script>
+  const TYPES = [
+    { code: "E1", name: "안정형",         major: "안정", cls: "stable", n: 18712, score: 82.3, income: 43969, dsr: 0.047, credit: 928, multi: 5.4 },
+    { code: "E2", name: "주택대출형",     major: "안정", cls: "stable", n:  8501, score: 66.8, income: 55327, dsr: 0.223, credit: 929, multi: 17.4 },
+    { code: "E3", name: "저부채형",       major: "안정", cls: "stable", n: 25711, score: 56.7, income: 32565, dsr: 0.031, credit: 899, multi: 3.9 },
+    { code: "E4", name: "금융이력부족형", major: "취약", cls: "vuln",   n: 23186, score: 45.3, income: 29809, dsr: 0.022, credit: 812, multi: 2.2 },
+    { code: "E5", name: "대출부담형",     major: "취약", cls: "vuln",   n: 20848, score: 18.3, income: 33109, dsr: 0.223, credit: 661, multi: 45.1 },
+    { code: "E6", name: "위기형",         major: "취약", cls: "vuln",   n:  3858, score:  9.9, income: 45006, dsr: 0.627, credit: 504, multi: 51.7 }
+  ];
+  const TOTAL = 100816;
+  const fmt = (v) => v.toLocaleString("ko-KR");
+
+  // 직접 라벨은 이야기의 두 지점(E1·E6)에만 — 나머지는 축과 툴팁이 담당한다.
+  const LABELLED = new Set(["E1", "E6"]);
+
+  const SPECS = {
+    score:  { max: 100,   ticks: [0, 25, 50, 75, 100],            fmt: (t) => t,              val: (d) => d.score,  label: (d) => d.score.toFixed(1) },
+    income: { max: 60000, ticks: [0, 20000, 40000, 60000],        fmt: (t) => fmt(t),          val: (d) => d.income, label: (d) => fmt(d.income) }
+  };
+
+  for (const [key, spec] of Object.entries(SPECS)) {
+    const axis  = document.querySelector(`[data-axis="${key}"]`);
+    const field = document.querySelector(`[data-field="${key}"]`);
+    const xaxis = document.querySelector(`[data-x="${key}"]`);
+
+    for (const t of spec.ticks) {
+      const pos = 100 - (t / spec.max) * 100;
+      const line = document.createElement("div");
+      line.className = "gridline" + (t === 0 ? " base" : "");
+      line.style.top = pos + "%";
+      field.append(line);
+
+      const lab = document.createElement("span");
+      lab.style.top = pos + "%";
+      lab.textContent = spec.fmt(t);
+      axis.append(lab);
+    }
+
+    const bars = document.createElement("div");
+    bars.className = "bars";
+    for (const d of TYPES) {
+      const pct = (spec.val(d) / spec.max) * 100;
+      const slot = document.createElement("button");
+      slot.className = "slot";
+      slot.type = "button";
+      slot.dataset.cls = d.cls;
+      slot.setAttribute("aria-label",
+        `${d.code} ${d.name} — 종합점수 ${d.score}, 평균 연소득 ${fmt(d.income)}천원, ${fmt(d.n)}명`);
+
+      const bar = document.createElement("div");
+      bar.className = "bar";
+      bar.style.height = pct + "%";
+      slot.append(bar);
+
+      if (LABELLED.has(d.code)) {
+        const tag = document.createElement("span");
+        tag.className = "tip-label";
+        tag.style.bottom = `calc(${pct}% + 7px)`;
+        tag.textContent = spec.label(d);
+        slot.append(tag);
+      }
+      slot.__data = d;
+      bars.append(slot);
+    }
+    field.append(bars);
+
+    for (const d of TYPES) {
+      const s = document.createElement("span");
+      s.textContent = d.code;
+      xaxis.append(s);
+    }
+  }
+
+  // 유형 프로파일 표 — 차트의 표 보기
+  const tbody = document.querySelector("[data-profile-table]");
+  for (const d of TYPES) {
+    const tr = document.createElement("tr");
+    tr.innerHTML =
+      `<td class="row-label">${d.code} ${d.name}<span class="row-sub">${d.major}</span></td>` +
+      `<td>${fmt(d.n)}</td>` +
+      `<td>${(100 * d.n / TOTAL).toFixed(1)}%</td>` +
+      `<td>${d.score.toFixed(1)}</td>` +
+      `<td>${fmt(d.income)}</td>` +
+      `<td>${d.dsr.toFixed(3)}</td>` +
+      `<td>${d.credit}</td>` +
+      `<td>${d.multi.toFixed(1)}%</td>`;
+    tbody.append(tr);
+  }
+
+  // 호버 레이어
+  const tip = document.getElementById("tooltip");
+  const show = (event) => {
+    const slot = event.currentTarget;
+    const d = slot.__data;
+    tip.innerHTML =
+      `<b>${d.code} ${d.name}</b> · ${d.major}<br>` +
+      `<span class="tt-row">종합점수 ${d.score.toFixed(1)} / 100</span><br>` +
+      `<span class="tt-row">평균 연소득 ${fmt(d.income)} 천원</span><br>` +
+      `<span class="tt-row">규모 ${fmt(d.n)}명 (${(100 * d.n / TOTAL).toFixed(1)}%)</span>`;
+    tip.dataset.show = "1";
+    const r = slot.getBoundingClientRect();
+    const w = tip.offsetWidth, h = tip.offsetHeight;
+    let left = r.left + r.width / 2 - w / 2;
+    left = Math.max(8, Math.min(left, window.innerWidth - w - 8));
+    let top = r.top - h - 10;
+    if (top < 8) top = r.bottom + 10;
+    tip.style.left = left + "px";
+    tip.style.top = top + "px";
+  };
+  const hide = () => { tip.dataset.show = "0"; };
+
+  for (const slot of document.querySelectorAll(".slot")) {
+    slot.addEventListener("pointerenter", show);
+    slot.addEventListener("focus", show);
+    slot.addEventListener("pointerleave", hide);
+    slot.addEventListener("blur", hide);
+  }
+</script>

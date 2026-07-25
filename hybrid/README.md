@@ -73,7 +73,8 @@ python -m hybrid.src.run --input "important data/(합성데이터)종합해커�
 {
   "etype": "E6", "etype_name": "위기형", "major_class": "취약",
   "stability_score": 3.8,
-  "type_confidence": 1.0, "confidence_guidance": "단독 표시 가능",
+  "type_confidence": 1.0,
+  "display_level": "detail", "confidence_guidance": "세부유형까지 표시 가능",
   "income": { "grade": "50~60% 취약경계", "ratio_to_median": 0.539,
               "percentile_busan_youth": 15.4, "policy_eligible": true },
   "employment_type": "급여소득",
@@ -90,7 +91,31 @@ python -m hybrid.src.run --input "important data/(합성데이터)종합해커�
 
 - `flags`·`income.grade`로 **정책 매칭**(백엔드 담당)
 - `indicators`·`survey_decision_path`·`reasons`로 **판정 근거 표시**(프론트)
-- `confidence_guidance`가 `유형 확정 자제`면 추가 질문 트리거
+
+### `display_level` — 프론트가 지켜야 할 표시 한도
+
+`etype` 값은 항상 실어 보내되, **어디까지 단정해도 되는지는 `display_level`이 정한다.**
+확신도 임계값은 경로별 실측으로 정했다. 문진과 정밀은 확신도 분포가 전혀 다르므로
+(문진 평균 0.516 / GMM 평균 0.918) 같은 임계값을 쓰지 않는다.
+
+| `display_level` | 프론트 동작 | 문진 경로 임계 | 정밀 경로 임계 |
+|---|---|---|---|
+| `detail` | 세부유형(E1~E6)까지 표시 | ≥ 0.80 | ≥ 0.70 |
+| `major` | **대분류(안정/취약)까지만** 표시, 세부유형은 참고값 | ≥ 0.60 | ≥ 0.50 |
+| `reference` | 유형 표시 안 함 — 지표·정책 근거만, **추가 질문 트리거** | < 0.60 | < 0.50 |
+
+문진 경로 실측(test 15,123명) 근거:
+
+| 수준 | 대상 | 세부유형 정확도 | 대분류 정확도 |
+|---|---:|---:|---:|
+| `detail` | 1.4% | **0.750** | 0.957 |
+| `major` | 14.5% | 0.669 | **0.857** |
+| `reference` | 84.1% | 0.492 | 0.664 |
+
+> **왜 세부유형 기준이 0.70이 아니라 0.80인가.** 0.70~0.80 구간만 세부 정확도가
+> **0.320으로 붕괴**한다. 단일 leaf 과적합이 원인이다(train 775명 순도 0.725 →
+> test 161명 정확도 0.317). 같은 구간에서도 대분류는 0.897을 유지하므로,
+> 그 구간은 `major`로 내려 대분류만 표시한다.
 
 ## 산출물 (`hybrid/outputs/`)
 

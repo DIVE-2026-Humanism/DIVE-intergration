@@ -189,8 +189,14 @@ def build_payload(row: pd.Series, source: str = "precise",
     if row.get("self_employed") == 1:
         reasons.append("자영업 — 동일 소득대비 재무 부담이 큰 집단")
 
-    conf = float(row.get("type_confidence", np.nan))
-    guidance = next(txt for lo, txt in C.CONFIDENCE_BANDS if conf >= lo) if pd.notna(conf) else "확신도 없음"
+    # 확신도는 경로마다 분포가 다르다(문진 평균 0.516 / GMM 평균 0.918). 경로에 맞는
+    # 값과 임계표를 쓰고, "무엇까지 단정해도 되는지"를 display_level로 함께 내보낸다.
+    bands = C.CONFIDENCE_BANDS_SURVEY if source == "survey" else C.CONFIDENCE_BANDS_PRECISE
+    conf = float(row.get(C.CONFIDENCE_SOURCE_COLUMN.get(source, "type_confidence"), np.nan))
+    if pd.notna(conf):
+        display_level, guidance = next((lv, txt) for lo, lv, txt in bands if conf >= lo)
+    else:
+        display_level, guidance = C.DISPLAY_REFERENCE, "확신도 없음"
 
     # 지표별 표본 백분위 — "왜 이 점수인가"의 근거
     indicators = []
@@ -223,6 +229,9 @@ def build_payload(row: pd.Series, source: str = "precise",
         "major_class": row.get("major_class"),
         "stability_score": round(float(row["stability_score"]), 1),
         "type_confidence": round(conf, 4) if pd.notna(conf) else None,
+        # display_level = 프론트가 지켜야 할 표시 한도. etype 값은 항상 실어 보내되
+        # detail이 아니면 세부유형을 단정 표기하지 않는다(major는 대분류까지만).
+        "display_level": display_level,
         "confidence_guidance": guidance,
         "income": {
             "grade": str(row.get("income_grade")),
