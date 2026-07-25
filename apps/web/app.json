@@ -1,0 +1,54 @@
+{
+  "expo": {
+    "name": "잡공구",
+    "slug": "busan-policy-gonggu",
+    "scheme": "jabgonggu",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/app-logo.png",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.jabgonggu.app"
+    },
+    "android": {
+      "package": "com.jabgonggu.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#ffffff",
+        "foregroundImage": "./assets/app-logo.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "favicon": "./assets/app-logo.png"
+    },
+    "plugins": [
+      "expo-web-browser",
+      "expo-secure-store",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "공동구매에 올릴 사진을 선택하기 위해 사진 접근 권한이 필요합니다."
+        }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "useFrameworks": "static"
+          }
+        }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/app-logo.png",
+          "imageWidth": 200,
+          "resizeMode": "contain",
+          "backgroundColor": "#ffffff"
+        }
+      ],
+      "expo-sharing"
+    ]
+  }
+}
