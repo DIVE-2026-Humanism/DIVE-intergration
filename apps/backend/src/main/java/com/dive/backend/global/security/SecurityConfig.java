@@ -61,6 +61,9 @@ public class SecurityConfig {
                             "/api/v1/auth/signup", "/api/v1/auth/login", "/api/v1/auth/refresh",
                             "/api/auth/kakao", "/api/auth/kakao/callback",
                             "/api/v1/policy/all", "/api/v1/policy/categories",
+                            "/api/auth/kakao",
+                            "/images/**",
+                            "/api/v1/gonggu/payment/approve", "/api/v1/gonggu/payment/cancel", "/api/v1/gonggu/payment/fail",
                             "/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**",
                             "/actuator/health", "/actuator/info"
                     ).permitAll()

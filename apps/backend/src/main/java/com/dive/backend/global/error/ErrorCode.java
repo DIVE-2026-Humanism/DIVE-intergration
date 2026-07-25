@@ -19,6 +19,7 @@ public enum ErrorCode {
     INVALID_INPUT_VALUE(HttpStatus.BAD_REQUEST, "CM001", "올바르지 않은 입력값입니다."),
     METHOD_NOT_ALLOWED(HttpStatus.METHOD_NOT_ALLOWED, "CM002", "잘못된 HTTP 메서드 호출입니다."),
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "CM003", "서버 내부 오류가 발생했습니다."),
+    FILE_UPLOAD_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "CM004", "파일 업로드에 실패했습니다."),
 
     // Member (회원 관련 — 이메일/비밀번호 기반 인증 공통)
     EMAIL_DUPLICATION(HttpStatus.BAD_REQUEST, "M001", "이미 존재하는 이메일입니다."),
@@ -33,13 +34,19 @@ public enum ErrorCode {
     REFRESH_TOKEN_NOT_FOUND(HttpStatus.UNAUTHORIZED, "A004", "존재하지 않거나 만료된 refresh token입니다."),
     ACCESS_DENIED(HttpStatus.FORBIDDEN, "A005", "접근 권한이 없습니다."),
 
+    // Policy (정책 관련)
+    POLICY_NOT_FOUND(HttpStatus.NOT_FOUND, "P001", "존재하지 않는 정책입니다."),
+
+    // Gonggu (공구 관련)
+    GONGGU_NOT_FOUND(HttpStatus.NOT_FOUND, "G001", "존재하지 않는 공구입니다."),
+    GONGGU_NOT_RECRUITING(HttpStatus.BAD_REQUEST, "G002", "모집 중인 공구가 아닙니다."),
+    GONGGU_ALREADY_PAID(HttpStatus.BAD_REQUEST, "G003", "이미 결제한 공구입니다."),
+    GONGGU_PAYMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "G004", "존재하지 않는 결제 내역입니다."),
     // Recommendation (정책 추천)
     KCB_NOT_CONNECTED(HttpStatus.BAD_REQUEST, "R001", "KCB 신용정보 연동이 필요합니다."),
     AI_FEEDBACK_UNAVAILABLE(HttpStatus.SERVICE_UNAVAILABLE, "R003", "신용 점수 산정 AI 서버에 연결할 수 없습니다."),
     NO_ELIGIBLE_POLICY(HttpStatus.NOT_FOUND, "R004", "조건에 맞는 정책이 없습니다."),
     DIAGNOSIS_NOT_FOUND(HttpStatus.NOT_FOUND, "R005", "진단 이력이 존재하지 않습니다."),
-
-    POLICY_NOT_FOUND(HttpStatus.NOT_FOUND, "P001", "존재하지 않는 정책입니다."),
 
     // Notification (알림)
     NOTIFICATION_NOT_FOUND(HttpStatus.NOT_FOUND, "N001", "존재하지 않는 알림입니다.");
