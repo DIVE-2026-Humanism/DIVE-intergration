@@ -1,6 +1,6 @@
 package com.dive.backend.global.security;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import com.dive.backend.global.common.ApiResponse;
 import com.dive.backend.global.error.ErrorCode;
 import jakarta.servlet.ServletException;

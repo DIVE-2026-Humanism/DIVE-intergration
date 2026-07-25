@@ -3,11 +3,6 @@ package com.dive.backend.member.domain;
 import jakarta.persistence.*;
 import lombok.*;
 
-/**
- * 최소 회원 엔티티. runApp의 Member는 Profile/SocialAccount 등 러닝 앱 전용
- * 연관관계를 갖고 있었는데, 범용 보일러플레이트라 전부 제거하고 인증에 꼭
- * 필요한 필드만 남겼다. 새 프로젝트에서 필요한 필드/연관관계를 추가해서 쓸 것.
- */
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -21,8 +16,8 @@ public class Member {
     @Column(name = "member_id")
     private Long id;
 
-    @Column(nullable = false, unique = true, length = 100)
-    private String email;
+    @Column(unique = true, length = 100)
+    private String email; // 카카오 계정이 이메일 동의를 안 하면 null일 수 있어 unique=true만 유지
 
     @Column
     private String password; // 소셜 로그인 전용 계정이면 null 허용
@@ -31,7 +26,39 @@ public class Member {
     @Column(nullable = false)
     private Role role;
 
+    @Column(name = "kakao_id", unique = true)
+    private String kakaoId;
+
+    private String nickname;
+
+    @Column(nullable = false)
+    private String career;
+
+    @Column(nullable = false)
+    private String finalEducation;
+
     public void updatePassword(String password) {
         this.password = password;
+    }
+
+    public void updateProfile(String nickname, String email) {
+        this.nickname = nickname;
+        this.email = email;
+    }
+
+    public static Member createFromKakao(String kakaoId, String nickname, String email) {
+        return Member.builder()
+                .kakaoId(kakaoId)
+                .nickname(nickname)
+                .email(email)
+                .role(Role.USER)
+                .career("미입력") // 온보딩에서 실제 값 입력받으면 교체
+                .finalEducation("미입력")
+                .build();
+    }
+
+    public void updateOnboarding(String career, String finalEducation) {
+        this.career = career;
+        this.finalEducation = finalEducation;
     }
 }
