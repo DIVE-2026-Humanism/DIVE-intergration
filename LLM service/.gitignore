@@ -2,6 +2,9 @@
 __pycache__/
 *.py[cod]
 .env
+.env.native
+.native/
+outputs/
 .pytest_cache/
 artifacts/*
 !artifacts/.gitkeep
@@ -15,3 +18,4 @@ reports/*
 !reports/implementation_details.md
 !reports/integration_guide.md
 !reports/llm_model_guide.md
+!reports/native_runtime.md
