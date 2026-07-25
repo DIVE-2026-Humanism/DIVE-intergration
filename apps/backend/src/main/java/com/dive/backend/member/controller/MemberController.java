@@ -3,6 +3,7 @@ package com.dive.backend.member.controller;
 import com.dive.backend.member.dto.MemberResponse;
 import com.dive.backend.member.dto.OnboardingRequest;
 import com.dive.backend.member.dto.PasswordChangeRequest;
+import com.dive.backend.member.dto.UpdateProfileRequest;
 import com.dive.backend.member.service.MemberService;
 import com.dive.backend.global.common.ApiResponse;
 import com.dive.backend.global.security.PrincipalDetails;
@@ -32,6 +33,13 @@ public class MemberController {
             @AuthenticationPrincipal PrincipalDetails principal,
             @Valid @RequestBody OnboardingRequest request) {
         return ApiResponse.success("온보딩 완료", memberService.updateOnboarding(principal.getMemberId(), request));
+    }
+
+    @PatchMapping("/me/profile")
+    public ApiResponse<MemberResponse> updateProfile(
+            @AuthenticationPrincipal PrincipalDetails principal,
+            @Valid @RequestBody UpdateProfileRequest request) {
+        return ApiResponse.success("프로필 수정 완료", memberService.updateProfile(principal.getMemberId(), request));
     }
 
     @PatchMapping("/me/password")

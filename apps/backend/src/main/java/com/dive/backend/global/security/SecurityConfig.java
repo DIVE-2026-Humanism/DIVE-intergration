@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -61,12 +62,15 @@ public class SecurityConfig {
                             "/api/v1/auth/signup", "/api/v1/auth/login", "/api/v1/auth/refresh",
                             "/api/auth/kakao", "/api/auth/kakao/callback",
                             "/api/v1/policy/all", "/api/v1/policy/categories",
+                            "/api/v1/gonggu/all",
                             "/api/auth/kakao",
                             "/images/**",
                             "/api/v1/gonggu/payment/approve", "/api/v1/gonggu/payment/cancel", "/api/v1/gonggu/payment/fail",
                             "/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**",
                             "/actuator/health", "/actuator/info"
                     ).permitAll()
+                    .requestMatchers(HttpMethod.GET, "/api/v1/policy/*").permitAll()
+                    .requestMatchers(HttpMethod.GET, "/api/v1/gonggu/*").permitAll()
                     .anyRequest().authenticated()
             )
 
@@ -82,14 +86,11 @@ public class SecurityConfig {
         return authenticationConfiguration.getAuthenticationManager();
     }
 
-    /**
-     * CORS 설정. Expo 웹(dev)은 포트가 유동적(8081/8082/8090/19006 등)이라 localhost/127.0.0.1의
-     * 모든 포트를 패턴으로 허용한다. 운영 배포 시에는 실제 도메인으로 좁힐 것.
-     */
+    /** CORS 설정: 모든 Origin을 허용한다. */
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOriginPatterns(List.of("http://localhost:*", "http://127.0.0.1:*"));
+        config.setAllowedOriginPatterns(List.of("*"));
         config.setAllowedMethods(List.of("GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setExposedHeaders(List.of("Authorization"));

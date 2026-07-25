@@ -52,6 +52,9 @@ public class Gonggu {
     @Column(name = "image_url")
     private String imageUrl;
 
+    @Column(name = "product_url", length = 1000)
+    private String productUrl;
+
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;

@@ -61,4 +61,10 @@ public class Member {
         this.career = career;
         this.finalEducation = finalEducation;
     }
+
+    public void updateMyProfile(String nickname, String career, String finalEducation) {
+        this.nickname = nickname;
+        this.career = career;
+        this.finalEducation = finalEducation;
+    }
 }

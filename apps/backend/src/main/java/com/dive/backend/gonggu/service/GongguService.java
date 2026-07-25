@@ -43,6 +43,7 @@ public class GongguService {
                 .startDate(request.startDate())
                 .endDate(request.endDate())
                 .imageUrl(fileStorageService.store(image))
+                .productUrl(blankToNull(request.productUrl()))
                 .build();
 
         return gongguRepository.save(gonggu).getId();
@@ -90,6 +91,7 @@ public class GongguService {
     private GongguResponse toResponse(Gonggu gonggu) {
         return new GongguResponse(
                 gonggu.getId(),
+                gonggu.getMember().getNickname(),
                 gonggu.getTitle(),
                 gonggu.getPrice(),
                 gonggu.getTargetCount(),
@@ -97,7 +99,8 @@ public class GongguService {
                 gonggu.getStatus(),
                 gonggu.getStartDate(),
                 gonggu.getEndDate(),
-                gonggu.getImageUrl()
+                gonggu.getImageUrl(),
+                gonggu.getProductUrl()
         );
     }
 
@@ -114,7 +117,12 @@ public class GongguService {
                 gonggu.getStartDate(),
                 gonggu.getEndDate(),
                 gonggu.getImageUrl(),
+                gonggu.getProductUrl(),
                 gonggu.getCreatedAt()
         );
+    }
+
+    private String blankToNull(String value) {
+        return value == null || value.isBlank() ? null : value.trim();
     }
 }

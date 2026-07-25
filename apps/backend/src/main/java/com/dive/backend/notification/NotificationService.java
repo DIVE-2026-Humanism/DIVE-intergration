@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 /**
- * 인앱 알림함 저장/조회. 발송(FcmService)과 분리되어, 푸시 성공 여부와 무관하게 알림 이력을 남긴다.
+ * 인앱 알림함 저장/조회 서비스.
  */
 @Service
 @RequiredArgsConstructor

@@ -4,6 +4,7 @@ import com.dive.backend.member.domain.Member;
 import com.dive.backend.member.dto.MemberResponse;
 import com.dive.backend.member.dto.OnboardingRequest;
 import com.dive.backend.member.dto.PasswordChangeRequest;
+import com.dive.backend.member.dto.UpdateProfileRequest;
 import com.dive.backend.member.repository.MemberRepository;
 import com.dive.backend.global.error.BusinessException;
 import com.dive.backend.global.error.ErrorCode;
@@ -31,9 +32,16 @@ public class MemberService {
         return toResponse(member);
     }
 
+    @Transactional
+    public MemberResponse updateProfile(Long memberId, UpdateProfileRequest request) {
+        Member member = findMember(memberId);
+        member.updateMyProfile(request.nickname().trim(), request.career().trim(), request.finalEducation().trim());
+        return toResponse(member);
+    }
+
     private MemberResponse toResponse(Member member) {
         return new MemberResponse(
-                member.getId(), member.getEmail(), member.getRole().name(),
+                member.getId(), member.getEmail(), member.getNickname(), member.getRole().name(),
                 member.getCareer(), member.getFinalEducation());
     }
 

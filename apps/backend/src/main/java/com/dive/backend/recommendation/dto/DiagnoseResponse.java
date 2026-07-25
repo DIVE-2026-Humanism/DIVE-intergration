@@ -8,6 +8,7 @@ public record DiagnoseResponse(
         int creditScore,
         PolicyType userType,
         String typeLabel,
+        AiEconomicReport aiReport,
         List<RecommendedPolicy> recommendations
 ) {
 }

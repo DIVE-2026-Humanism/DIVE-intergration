@@ -14,7 +14,6 @@ public class Diagnosis {
     private Long id;
     @ManyToOne(fetch = FetchType.LAZY) @JoinColumn(name = "member_id", nullable = false)
     private Member member;
-    @Column(name = "policy_type_id", nullable = false) private Integer policyTypeId;
     @Column(name = "total_score", nullable = false) private Integer creditScore;
     @Enumerated(EnumType.STRING) @Column(name = "user_type", nullable = false, length = 12)
     private PolicyType userType;
@@ -22,9 +21,8 @@ public class Diagnosis {
 
     protected Diagnosis() { }
 
-    public Diagnosis(Member member, int policyTypeId, int creditScore, PolicyType userType) {
+    public Diagnosis(Member member, int creditScore, PolicyType userType) {
         this.member = member;
-        this.policyTypeId = policyTypeId;
         this.creditScore = creditScore;
         this.userType = userType;
         this.createdAt = LocalDateTime.now();

@@ -16,6 +16,7 @@ public record GongguDetailResponse(
         LocalDateTime startDate,
         LocalDateTime endDate,
         String imageUrl,
+        String productUrl,
         LocalDateTime createdAt
 ) {
 }

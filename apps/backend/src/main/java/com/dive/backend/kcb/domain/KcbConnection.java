@@ -24,4 +24,14 @@ public class KcbConnection {
     private Double typeConfidence;
     @Column(nullable = false) private boolean dummy;
     @CreationTimestamp @Column(nullable = false, updatable = false) private LocalDateTime createdAt;
+
+    public void updateAiAnalysis(String responseJson, double score, String type, String typeName,
+                                 String classification, double confidence) {
+        this.aiResponseJson = responseJson;
+        this.compositeStabilityScore = score;
+        this.economicType = type;
+        this.economicTypeName = typeName;
+        this.majorClass = classification;
+        this.typeConfidence = confidence;
+    }
 }

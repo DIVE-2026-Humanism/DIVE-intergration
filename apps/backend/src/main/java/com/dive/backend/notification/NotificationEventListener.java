@@ -3,7 +3,6 @@ package com.dive.backend.notification;
 import com.dive.backend.notification.event.GongguParticipantJoinedEvent;
 import com.dive.backend.notification.event.PolicyDeadlineApproachingEvent;
 import com.dive.backend.notification.event.PushNotificationEvent;
-import com.dive.backend.push.service.FcmService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
@@ -15,7 +14,7 @@ import org.springframework.transaction.event.TransactionalEventListener;
 import java.util.Map;
 
 /**
- * 알림 이벤트 → FCM 발송. 트랜잭션이 있으면 커밋 이후에(AFTER_COMMIT), 없으면 즉시
+ * 알림 이벤트 → 인앱 알림함 저장. 트랜잭션이 있으면 커밋 이후에(AFTER_COMMIT), 없으면 즉시
  * (fallbackExecution=true) 실행되며, @Async로 별도 스레드에서 처리해 요청 스레드를 막지 않는다.
  *
  * 트랜잭션 롤백 시에는 알림이 나가지 않는다(원자성). 발송 실패는 로깅만 하고 삼킨다.
@@ -25,7 +24,6 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class NotificationEventListener {
 
-    private final FcmService fcmService;
     private final NotificationService notificationService;
     private final NotificationSettingService settingService;
 
@@ -52,7 +50,7 @@ public class NotificationEventListener {
                 "policy", Map.of("type", "policy"));
     }
 
-    /** 알림함 저장 + FCM 발송. 각각 독립적으로 실패를 격리한다(저장은 성공, 푸시만 실패 가능). */
+    /** 알림 설정을 확인한 뒤 인앱 알림함에 저장한다. */
     private void dispatch(Long memberId, String title, String body, String type, Map<String, String> data) {
         // 회원의 알림 설정에서 해당 유형이 꺼져 있으면 발송하지 않는다.
         if (!settingService.isEnabled(memberId, type)) {
@@ -64,11 +62,6 @@ public class NotificationEventListener {
         } catch (Exception ex) {
             log.error("[알림] memberId={} 저장 중 오류", memberId, ex);
         }
-        try {
-            int sent = fcmService.sendToMember(memberId, title, body, data);
-            log.info("[알림] memberId={} '{}' 저장 완료, 푸시 {}건", memberId, title, sent);
-        } catch (Exception ex) {
-            log.error("[알림] memberId={} 푸시 발송 중 오류", memberId, ex);
-        }
+        log.info("[알림] memberId={} '{}' 인앱 알림 저장 완료", memberId, title);
     }
 }

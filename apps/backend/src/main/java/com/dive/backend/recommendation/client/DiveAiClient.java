@@ -1,6 +1,5 @@
 package com.dive.backend.recommendation.client;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
@@ -31,27 +30,30 @@ public class DiveAiClient {
 
     /** KCB 레코드로 economic-feedback를 호출해 안정성 점수(0~100)를 반환한다. */
     public double compositeStabilityScore(Map<String, Object> kcbRecord) {
-        JsonNode body = economicFeedback(kcbRecord);
-        JsonNode score = body.path(SCORE_FIELD);
-        if (score.isMissingNode() || !score.isNumber()) {
+        Map<String, Object> body = economicFeedback(kcbRecord);
+        Object score = body.get(SCORE_FIELD);
+        if (!(score instanceof Number number)) {
             throw new IllegalStateException("economic-feedback 응답에 " + SCORE_FIELD + "가 없습니다: " + body);
         }
-        return score.asDouble();
+        return number.doubleValue();
     }
 
-    public JsonNode economicFeedback(Map<String, Object> kcbRecord) {
+    @SuppressWarnings("unchecked")
+    public Map<String, Object> economicFeedback(Map<String, Object> kcbRecord) {
         Map<String, Object> payload = Map.of("kcb_record", kcbRecord);
 
         RuntimeException last = null;
         for (int attempt = 0; attempt <= properties.maxRetries(); attempt++) {
             try {
-                return restClient.post()
+                Map<?, ?> response = restClient.post()
                         .uri("/v1/economic-feedback")
                         .contentType(MediaType.APPLICATION_JSON)
                         .header("User-Agent", "DIVE-Backend/1.0")
                         .body(payload)
                         .retrieve()
-                        .body(JsonNode.class);
+                        .body(Map.class);
+                log.info("DIVE AI economic-feedback response: {}", response);
+                return (Map<String, Object>) response;
             } catch (RuntimeException exception) {
                 last = exception;
                 log.warn("DIVE AI economic feedback failed (attempt {}/{})", attempt + 1, properties.maxRetries() + 1, exception);

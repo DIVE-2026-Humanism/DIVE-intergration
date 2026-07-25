@@ -47,4 +47,11 @@ public class NotificationController {
         notificationService.markAllRead(principal.getMemberId());
         return ApiResponse.success("전체 읽음 처리 완료");
     }
+
+    /** 인앱 알림함 연결 확인용 테스트 알림 */
+    @PostMapping("/test")
+    public ApiResponse<Void> test(@AuthenticationPrincipal PrincipalDetails principal) {
+        notificationService.record(principal.getMemberId(), "알림 테스트", "인앱 알림함이 정상적으로 연결되었습니다.", "general");
+        return ApiResponse.success("테스트 알림을 알림함에 저장했습니다.");
+    }
 }

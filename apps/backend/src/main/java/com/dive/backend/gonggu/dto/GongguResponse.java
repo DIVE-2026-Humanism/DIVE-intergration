@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 
 public record GongguResponse(
         Long id,
+        String writerNickname,
         String title,
         Integer price,
         Integer targetCount,
@@ -13,6 +14,7 @@ public record GongguResponse(
         Status status,
         LocalDateTime startDate,
         LocalDateTime endDate,
-        String imageUrl
+        String imageUrl,
+        String productUrl
 ) {
 }

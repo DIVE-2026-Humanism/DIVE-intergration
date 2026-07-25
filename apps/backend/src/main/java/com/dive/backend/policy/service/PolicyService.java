@@ -27,6 +27,7 @@ public class PolicyService {
     private final PolicyRepository policyRepository;
     private final PolicyLikeRepository policyLikeRepository;
     private final MemberRepository memberRepository;
+    private final PolicyPopularityService policyPopularityService;
 
     /** 대분류 5개 + 각 대분류의 중분류 목록. (온통청년 분류 구조) */
     public List<PolicyCategoryResponse> getCategories() {
@@ -53,6 +54,7 @@ public class PolicyService {
         }
 
         return policyRepository.findAll(spec).stream()
+                .filter(PolicyApplicationPeriod::isOpen)
                 .map(this::toResponse)
                 .toList();
     }
@@ -61,7 +63,7 @@ public class PolicyService {
     public PolicyDetailResponse getDetail(Long policyId) {
         Policy policy = policyRepository.findById(policyId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.POLICY_NOT_FOUND));
-        policy.increaseViewCount();
+        policyPopularityService.recordView(policyId);
         return toDetailResponse(policy);
     }
 
@@ -72,12 +74,15 @@ public class PolicyService {
                 policy.getPlcyNm(),
                 policy.getPlcyKywdNm(),
                 policy.getPlcyExplnCn(),
+                policy.getPlcySprtCn(),
                 policy.getLclsfNm(),
                 policy.getMclsfNm(),
                 policy.getSprvsnInstNm(),
                 policy.getAplyUrlAddr(),
                 policy.getAplyPrdSeCd(),
                 policy.getAplyYmd(),
+                policy.getSprtTrgtMinAge(),
+                policy.getSprtTrgtMaxAge(),
                 policy.getViewCount()
         );
     }
@@ -148,6 +153,8 @@ public class PolicyService {
     }
 
     public List<Long> getTop10() {
-        return policyRepository.findByTopLike(PageRequest.of(0, 10));
+        List<Long> ranking = policyPopularityService.topPolicyIds();
+        // 첫 10분 집계 전에는 빈 화면을 피하기 위해 기존 좋아요 순을 임시로 제공한다.
+        return ranking.isEmpty() ? policyRepository.findByTopLike(PageRequest.of(0, 10)) : ranking;
     }
 }

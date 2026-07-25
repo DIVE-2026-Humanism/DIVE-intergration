@@ -9,30 +9,24 @@ import java.time.LocalDateTime;
 
 @Entity
 @Getter
-@Table(name = "policy_recommendation")
-public class PolicyRecommendation {
+@Table(name = "saved_policy_recommendation", uniqueConstraints = @UniqueConstraint(name = "uk_saved_recommendation_member_policy", columnNames = {"member_id", "policy_id"}))
+public class SavedPolicyRecommendation {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY) private Long id;
-    @ManyToOne(fetch = FetchType.LAZY) @JoinColumn(name = "diagnosis_id", nullable = false) private Diagnosis diagnosis;
     @ManyToOne(fetch = FetchType.LAZY) @JoinColumn(name = "member_id", nullable = false) private Member member;
+    @ManyToOne(fetch = FetchType.LAZY) @JoinColumn(name = "diagnosis_id", nullable = false) private Diagnosis diagnosis;
     @ManyToOne(fetch = FetchType.LAZY) @JoinColumn(name = "policy_id", nullable = false) private Policy policy;
-    @Column(name = "rank_order", nullable = false) private int rankOrder;
     @Column(nullable = false, length = 500) private String reason;
     @Column(nullable = false, length = 500) private String caution;
-    @Column(name = "created_at", nullable = false, updatable = false) private LocalDateTime createdAt;
+    @Column(name = "saved_at", nullable = false, updatable = false) private LocalDateTime savedAt;
 
-    protected PolicyRecommendation() { }
+    protected SavedPolicyRecommendation() { }
 
-    public PolicyRecommendation(Diagnosis diagnosis, Member member, Policy policy, int rankOrder, String reason, String caution) {
-        this.diagnosis = diagnosis;
+    public SavedPolicyRecommendation(Member member, Diagnosis diagnosis, Policy policy, String reason, String caution) {
         this.member = member;
+        this.diagnosis = diagnosis;
         this.policy = policy;
-        this.rankOrder = rankOrder;
         this.reason = reason;
         this.caution = caution;
-    }
-
-    @PrePersist
-    private void onCreate() {
-        if (createdAt == null) createdAt = LocalDateTime.now();
+        this.savedAt = LocalDateTime.now();
     }
 }
