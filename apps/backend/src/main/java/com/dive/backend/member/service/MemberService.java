@@ -2,6 +2,7 @@ package com.dive.backend.member.service;
 
 import com.dive.backend.member.domain.Member;
 import com.dive.backend.member.dto.MemberResponse;
+import com.dive.backend.member.dto.OnboardingRequest;
 import com.dive.backend.member.dto.PasswordChangeRequest;
 import com.dive.backend.member.repository.MemberRepository;
 import com.dive.backend.global.error.BusinessException;
@@ -20,7 +21,20 @@ public class MemberService {
 
     public MemberResponse getMe(Long memberId) {
         Member member = findMember(memberId);
-        return new MemberResponse(member.getId(), member.getEmail(), member.getRole().name());
+        return toResponse(member);
+    }
+
+    @Transactional
+    public MemberResponse updateOnboarding(Long memberId, OnboardingRequest request) {
+        Member member = findMember(memberId);
+        member.updateOnboarding(request.career(), request.finalEducation());
+        return toResponse(member);
+    }
+
+    private MemberResponse toResponse(Member member) {
+        return new MemberResponse(
+                member.getId(), member.getEmail(), member.getRole().name(),
+                member.getCareer(), member.getFinalEducation());
     }
 
     @Transactional

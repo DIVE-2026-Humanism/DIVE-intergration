@@ -1,6 +1,7 @@
 package com.dive.backend.member.controller;
 
 import com.dive.backend.member.dto.MemberResponse;
+import com.dive.backend.member.dto.OnboardingRequest;
 import com.dive.backend.member.dto.PasswordChangeRequest;
 import com.dive.backend.member.service.MemberService;
 import com.dive.backend.global.common.ApiResponse;
@@ -20,6 +21,17 @@ public class MemberController {
     @GetMapping("/me")
     public ApiResponse<MemberResponse> getMe(@AuthenticationPrincipal PrincipalDetails principal) {
         return ApiResponse.success("조회 성공", memberService.getMe(principal.getMemberId()));
+    }
+
+    /**
+     * 온보딩(커리어/최종학력) 입력·수정. 카카오 가입 시 기본값("미입력")으로 채워진
+     * 값을 실제 값으로 교체한다.
+     */
+    @PatchMapping("/me/onboarding")
+    public ApiResponse<MemberResponse> updateOnboarding(
+            @AuthenticationPrincipal PrincipalDetails principal,
+            @Valid @RequestBody OnboardingRequest request) {
+        return ApiResponse.success("온보딩 완료", memberService.updateOnboarding(principal.getMemberId(), request));
     }
 
     @PatchMapping("/me/password")
