@@ -116,13 +116,20 @@ export async function createGonggu(request: CreateGongguRequest): Promise<string
   form.append('startDate', request.startDate);
   form.append('endDate', request.endDate);
   if (request.productUrl?.trim()) form.append('productUrl', request.productUrl.trim());
-  if (request.productImage) {
-    const extension = request.productImage.mimeType?.split('/')[1] ?? 'jpg';
-    form.append('image', {
-      uri: request.productImage.uri,
-      name: `product-image.${extension}`,
-      type: request.productImage.mimeType ?? 'image/jpeg',
-    } as unknown as Blob);
+  if (request.productImage?.uri) {
+    const mimeType = request.productImage.mimeType?.toLowerCase().startsWith('image/')
+      ? request.productImage.mimeType.toLowerCase()
+      : 'image/jpeg';
+    // MIME subtype에 확장자로 사용할 수 없는 값이 섞이지 않도록 제한합니다.
+    const extension = mimeType.slice('image/'.length).replace(/[^a-z0-9]/g, '') || 'jpeg';
+    // Expo 57의 Winter fetch는 RN의 {uri: ...} proprietary 파트를 지원하지 않습니다.
+    // 로컬 URI를 Blob으로 읽어 append하면 Android/웹 양쪽에서 동일하게 처리됩니다.
+    const imageResponse = await fetch(request.productImage.uri);
+    if (!imageResponse.ok) {
+      throw new ApiError('상품 이미지를 읽을 수 없습니다.', imageResponse.status);
+    }
+    const imageBlob = await imageResponse.blob();
+    form.append('image', imageBlob, `product-image.${extension}`);
   }
 
   const response = await fetch(`${env.apiBaseUrl}/api/v1/gonggu`, {

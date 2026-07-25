@@ -9,7 +9,7 @@ export type KcbConnectResult = {
   creditGrade: string;
 };
 
-/** POST /api/v1/kcb/connect — 더미 KCB 정보를 DB에 저장(연동) */
+/** POST /api/v1/kcb/connect — KCB 연동 정보를 DB에 저장 */
 export async function connectKcb(): Promise<KcbConnectResult> {
   return api<KcbConnectResult>('/api/v1/kcb/connect', { method: 'POST', auth: true });
 }

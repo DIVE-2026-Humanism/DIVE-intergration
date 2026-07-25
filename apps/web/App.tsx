@@ -9,6 +9,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import * as ImagePicker from 'expo-image-picker';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
+import * as FileSystem from 'expo-file-system/legacy';
 import { theme } from './src/config/theme';
 import { createGonggu, getGongguDetail, getGongguList, prepareGongguPayment, toggleGongguLike, getMyLikedGonggus } from './src/api/gonggu';
 import { getPolicyList, getPolicies, getPolicyCategories, getPolicyDetail, PolicyCategory, togglePolicyLike, getMyLikedPolicies, getTopPolicies } from './src/api/policy';
@@ -721,11 +722,11 @@ function Recommendation({ onSave, loggedIn, goLogin }: { onSave: (r: SavedRec) =
   const [recError, setRecError] = useState<string | null>(null);
   const [exportingPdf, setExportingPdf] = useState(false);
 
-  const linkDummyKcb = async () => {
+  const linkKcb = async () => {
     if (kcbLinking) return;
     setKcbLinking(true);
     try {
-      // 백엔드에 더미 KCB 연동 저장: POST /api/v1/kcb/connect
+      // 백엔드에 KCB 연동 정보를 저장한다: POST /api/v1/kcb/connect
       const res = await connectKcb();
       const day = new Date(res.createdAt);
       setKcbConnection({
@@ -780,15 +781,8 @@ function Recommendation({ onSave, loggedIn, goLogin }: { onSave: (r: SavedRec) =
     if (exportingPdf) return;
     setExportingPdf(true);
     try {
-      const html = recommendationReportHtml(recScore, recGrade, recCards);
-      if (Platform.OS === 'web') {
-        await Print.printAsync({ html });
-        Alert.alert('PDF 저장', '인쇄 창에서 “PDF로 저장”을 선택해주세요.');
-        return;
-      }
-      const file = await Print.printToFileAsync({ html, base64: false });
-      if (await Sharing.isAvailableAsync()) await Sharing.shareAsync(file.uri, { mimeType: 'application/pdf', UTI: '.pdf' });
-      else Alert.alert('PDF 생성 완료', `파일 경로: ${file.uri}`);
+      const html = recommendationReportHtml(recScore, recGrade, recCards, result?.aiReport ?? null);
+      await downloadRecommendationPdf(html);
     } catch (e: any) {
       Alert.alert('다운로드 실패', e?.message ?? 'PDF를 만들지 못했어요. 다시 시도해주세요.');
     } finally {
@@ -847,8 +841,8 @@ function Recommendation({ onSave, loggedIn, goLogin }: { onSave: (r: SavedRec) =
           {!kcbConnection ? (
             <>
               <Text style={styles.creditTitle}>신용정보 연동</Text>
-              <Text style={styles.recSub}>데모용 KCB 신용정보를 안전하게 불러와요</Text>
-              <Pressable disabled={kcbLinking} onPress={linkDummyKcb} style={[styles.creditBtn, kcbLinking && styles.creditBtnDisabled]} accessibilityRole="button">
+              <Text style={styles.recSub}>KCB 신용정보를 안전하게 불러와요</Text>
+              <Pressable disabled={kcbLinking} onPress={linkKcb} style={[styles.creditBtn, kcbLinking && styles.creditBtnDisabled]} accessibilityRole="button">
                 <Text style={styles.creditBtnText}>{kcbLinking ? 'KCB 정보 불러오는 중…' : 'KCB 신용정보 연동하기'}</Text>
               </Pressable>
             </>
@@ -856,10 +850,10 @@ function Recommendation({ onSave, loggedIn, goLogin }: { onSave: (r: SavedRec) =
             <>
               <View style={styles.creditLinkedRow}>
                 <View style={styles.linkedBadge}><Text style={styles.linkedBadgeText}>연동됨</Text></View>
-                <Text style={styles.recSub}>데모 KCB 신용점수 {kcbConnection.score}점 · {kcbConnection.grade}</Text>
+                <Text style={styles.recSub}>KCB 신용점수 {kcbConnection.score}점 · {kcbConnection.grade}</Text>
               </View>
-              <Text style={styles.creditUpdated}>기준일 {kcbConnection.updatedAt} · 더미 데이터</Text>
-              <Pressable disabled={kcbLinking} onPress={linkDummyKcb} style={styles.creditOutlineBtn} accessibilityRole="button">
+              <Text style={styles.creditUpdated}>기준일 {kcbConnection.updatedAt}</Text>
+              <Pressable disabled={kcbLinking} onPress={linkKcb} style={styles.creditOutlineBtn} accessibilityRole="button">
                 <Text style={styles.creditOutlineText}>{kcbLinking ? '갱신 중…' : '최신 정보로 불러오기'}</Text>
               </Pressable>
             </>
@@ -933,8 +927,7 @@ function Recommendation({ onSave, loggedIn, goLogin }: { onSave: (r: SavedRec) =
         </View>
 
         {result?.aiReport && <View style={styles.aiReportSection}><Text style={styles.aiReportSectionTitle}>AI 리포트</Text><Text style={styles.aiReportSectionSub}>경제 데이터 기반 분석 결과예요</Text><EconomicInsights report={result.aiReport} /></View>}
-      </ScrollView>
-      <View style={styles.saveBar}>
+        <View style={styles.saveBarInline}>
         <View style={styles.resultActionRow}>
           <Pressable disabled={exportingPdf} onPress={() => { void downloadPdf(); }} style={[styles.downloadBtn, exportingPdf && styles.actionDisabled]}>
             <Feather name="download" size={14} color={theme.accent} />
@@ -958,15 +951,59 @@ function Recommendation({ onSave, loggedIn, goLogin }: { onSave: (r: SavedRec) =
             <Feather name="help-circle" size={18} color={theme.accent} />
           </Pressable>}
         </View>
-      </View>
+        </View>
+      </ScrollView>
     </View>
   );
 }
 
-function recommendationReportHtml(score: number, typeLabel: string, cards: { tag: string; title: string; summary: string; reason: string; caution: string }[]) {
+type RecommendationReportCard = { tag: string; title: string; summary: string; reason: string; caution: string };
+
+async function downloadRecommendationPdf(html: string): Promise<void> {
+  if (Platform.OS === 'web') {
+    await Print.printAsync({ html });
+    Alert.alert('PDF 저장', '인쇄 창에서 “PDF로 저장”을 선택해주세요.');
+    return;
+  }
+
+  const file = await Print.printToFileAsync({ html, base64: false });
+  if (Platform.OS === 'android') {
+    // Android의 scoped storage에서는 사용자가 저장할 폴더를 선택해야 앱이 실제 파일을 쓸 수 있다.
+    const permission = await FileSystem.StorageAccessFramework.requestDirectoryPermissionsAsync();
+    if (!permission.granted) {
+      Alert.alert('저장 취소', 'PDF를 저장할 폴더를 선택하지 않았어요.');
+      return;
+    }
+
+    const fileName = `DIVE_정책추천_${new Date().toISOString().slice(0, 10)}.pdf`;
+    const destinationUri = await FileSystem.StorageAccessFramework.createFileAsync(
+      permission.directoryUri,
+      fileName,
+      'application/pdf',
+    );
+    const base64 = await FileSystem.readAsStringAsync(file.uri, { encoding: FileSystem.EncodingType.Base64 });
+    await FileSystem.writeAsStringAsync(destinationUri, base64, { encoding: FileSystem.EncodingType.Base64 });
+    Alert.alert('PDF 저장 완료', '선택한 폴더에 PDF를 저장했어요.');
+    return;
+  }
+
+  // iOS는 사용자가 파일 앱 등의 저장 위치를 선택하도록 시스템 공유 시트를 사용한다.
+  if (await Sharing.isAvailableAsync()) {
+    await Sharing.shareAsync(file.uri, { mimeType: 'application/pdf', UTI: '.pdf' });
+    return;
+  }
+  Alert.alert('PDF 생성 완료', `파일 경로: ${file.uri}`);
+}
+
+function recommendationReportHtml(score: number, typeLabel: string, cards: RecommendationReportCard[], aiReport: DiagnoseResult['aiReport']) {
   const escape = (value: string) => value.replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char] ?? char));
   const policies = cards.map((item, index) => `<section class="policy"><p class="tag">${escape(item.tag || '정책')}</p><h3>${index + 1}. ${escape(item.title)}</h3><p>${escape(item.summary || '지원 내용을 확인해주세요.')}</p><p class="reason">추천 이유 · ${escape(item.reason || '내 상황에 맞는 정책입니다.')}</p>${item.caution ? `<p class="caution">신청 전 확인 · ${escape(item.caution)}</p>` : ''}</section>`).join('');
-  return `<!doctype html><html lang="ko"><head><meta charset="utf-8"><style>body{font-family:Arial,'Malgun Gothic',sans-serif;color:#173B57;padding:28px;line-height:1.55}.head{border-bottom:3px solid #3B9FD8;padding-bottom:16px}.score{font-size:40px;font-weight:800;color:#1689C5}.tag{color:#1689C5;font-size:12px;font-weight:700;margin:0}.policy{border:1px solid #DCE7EC;border-radius:12px;padding:15px;margin:12px 0}.policy h3{margin:5px 0}.policy p{margin:5px 0;color:#4F6675}.reason{background:#EFF8FD;padding:8px;border-radius:7px}.caution{font-size:12px;color:#748995}.foot{margin-top:24px;color:#748995;font-size:11px}</style></head><body><div class="head"><h1>DIVE 정책 추천 결과</h1><div class="score">${Math.round(score)} / 100</div><p>${escape(typeLabel)} · ${new Date().toLocaleDateString('ko-KR')}</p></div><h2>추천 정책 ${cards.length}개</h2>${policies}<p class="foot">정책별 신청 자격·기간·제출 서류는 신청 전 반드시 원문 공고에서 확인해주세요.</p></body></html>`;
+  const feedback = aiReport?.feedback.map((item) => `<li><strong>${escape(item.category)}</strong> · ${escape(item.message)}${item.evidence ? `<br><span class="evidence">근거: ${escape(item.evidence)}</span>` : ''}</li>`).join('') ?? '';
+  const comparisons = aiReport?.peerComparisons.map((item) => `<li>${escape(item.metric)}: 평균 대비 ${item.gapPercent == null ? '-' : `${item.gapPercent > 0 ? '+' : ''}${item.gapPercent.toFixed(1)}%`} (${escape(item.direction)})</li>`).join('') ?? '';
+  const guides = aiReport?.guides.map((item, index) => `<li><strong>${escape(`${item.priority ?? index + 1}. ${item.title}`)}</strong> — ${escape(item.action)}</li>`).join('') ?? '';
+  const housing = aiReport?.housingBenchmark;
+  const aiSection = aiReport ? `<section class="report"><h2>AI 리포트</h2><h3>${escape(aiReport.economicTypeName || typeLabel)}</h3>${aiReport.summary ? `<p>${escape(aiReport.summary)}</p>` : ''}<p class="meta">분석 신뢰도 ${aiReport.typeConfidence == null ? '확인 중' : `${Math.round(aiReport.typeConfidence * 100)}%`}</p>${feedback ? `<h3>항목별 분석</h3><ul>${feedback}</ul>` : ''}${comparisons ? `<h3>또래 평균 비교</h3><ul>${comparisons}</ul>` : ''}${housing ? `<h3>${escape(housing.region)} 주거 참고</h3><p>월세 중앙값 ${housing.monthlyRentMedian ?? '-'}만원 · 전세보증금 중앙값 ${housing.jeonseDepositMedian ?? '-'}만원</p>` : ''}${guides ? `<h3>지금 해볼 일</h3><ul>${guides}</ul>` : ''}${aiReport.disclaimer ? `<p class="foot">${escape(aiReport.disclaimer)}</p>` : ''}</section>` : '';
+  return `<!doctype html><html lang="ko"><head><meta charset="utf-8"><style>body{font-family:Arial,'Malgun Gothic',sans-serif;color:#173B57;padding:28px;line-height:1.55}.head{border-bottom:3px solid #3B9FD8;padding-bottom:16px}.score{font-size:40px;font-weight:800;color:#1689C5}.tag{color:#1689C5;font-size:12px;font-weight:700;margin:0}.policy,.report{border:1px solid #DCE7EC;border-radius:12px;padding:15px;margin:12px 0}.policy h3,.report h3{margin:8px 0}.policy p,.report p{margin:5px 0;color:#4F6675}.report ul{padding-left:20px;color:#4F6675}.report li{margin:7px 0}.reason{background:#EFF8FD;padding:8px;border-radius:7px}.caution,.evidence,.meta{font-size:12px;color:#748995}.foot{margin-top:24px;color:#748995;font-size:11px}</style></head><body><div class="head"><h1>DIVE 정책 추천 결과</h1><div class="score">${Math.round(score)} / 100</div><p>${escape(typeLabel)} · ${new Date().toLocaleDateString('ko-KR')}</p></div><h2>추천 정책 ${cards.length}개</h2>${policies}${aiSection}<p class="foot">정책별 신청 자격·기간·제출 서류는 신청 전 반드시 원문 공고에서 확인해주세요.</p></body></html>`;
 }
 
 function stabilityColor(vulnerable: boolean) { return vulnerable ? '#D9485F' : theme.accent; }
@@ -1040,7 +1077,7 @@ function GongguList({ items, open, likedGonggu, onToggleGonggu, loggedIn, goLogi
 
   const openCreateForm = () => {
     if (!loggedIn) {
-      Alert.alert('로그인 필요', '공동구매 등록은 로그인 후 이용할 수 있어요.', [{ text: '취소', style: 'cancel' }, { text: '로그인', onPress: goLogin }]);
+      goLogin();
       return;
     }
     setFormOpen(true);
@@ -1284,15 +1321,8 @@ function SavedRecommendationResultView({ detail, onBack, openPolicy }: { detail:
     setExportingPdf(true);
     try {
       const cards = result.recommendations.map((item) => ({ tag: item.lclsfNm || '정책', title: item.plcyNm, summary: item.benefit || '', reason: item.reason || '', caution: item.caution || '' }));
-      const html = recommendationReportHtml(result.creditScore, result.typeLabel, cards);
-      if (Platform.OS === 'web') {
-        await Print.printAsync({ html });
-        Alert.alert('PDF 저장', '인쇄 창에서 “PDF로 저장”을 선택해주세요.');
-      } else {
-        const file = await Print.printToFileAsync({ html, base64: false });
-        if (await Sharing.isAvailableAsync()) await Sharing.shareAsync(file.uri, { mimeType: 'application/pdf', UTI: '.pdf' });
-        else Alert.alert('PDF 생성 완료', `파일 경로: ${file.uri}`);
-      }
+      const html = recommendationReportHtml(result.creditScore, result.typeLabel, cards, result.aiReport);
+      await downloadRecommendationPdf(html);
     } catch (e: any) {
       Alert.alert('다운로드 실패', e?.message ?? 'PDF를 만들지 못했어요. 다시 시도해주세요.');
     } finally {
@@ -1896,7 +1926,7 @@ const styles = StyleSheet.create({
   introLoginBtn: { alignSelf: 'stretch', backgroundColor: theme.accent, borderRadius: 14, paddingVertical: 16, alignItems: 'center' },
   introLoginText: { color: '#fff', fontSize: 15, fontWeight: '800' },
 
-  saveBar: { position: 'absolute', left: 0, right: 0, bottom: 76, paddingHorizontal: 20, paddingTop: 10, paddingBottom: 12, backgroundColor: theme.background, borderTopWidth: 1, borderColor: theme.surfaceAlt, alignItems: 'center' },
+  saveBarInline: { marginTop: 20, marginHorizontal: -22, paddingHorizontal: 22, paddingTop: 12, paddingBottom: 18, backgroundColor: theme.background, borderTopWidth: 1, borderColor: theme.surfaceAlt, alignItems: 'center' },
   resultActionRow: { flexDirection: 'row', alignItems: 'center', gap: 8, alignSelf: 'stretch' },
   saveBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, alignSelf: 'stretch', backgroundColor: theme.accent, borderRadius: 12, paddingVertical: 15 },
   saveBtnGrow: { flex: 1 },
