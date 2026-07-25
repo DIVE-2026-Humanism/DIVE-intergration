@@ -42,7 +42,19 @@
       "PowerShell(python \"C:\\\\Users\\\\LG\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\--wsl-localhost-Ubuntu-home-taek-github-DIVE-intergration\\\\84fdc2a1-eabd-495c-9d96-5d8b939f7f43\\\\scratchpad\\\\audit.py\")",
       "PowerShell(python \"C:\\\\Users\\\\LG\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\--wsl-localhost-Ubuntu-home-taek-github-DIVE-intergration\\\\84fdc2a1-eabd-495c-9d96-5d8b939f7f43\\\\scratchpad\\\\deepdive.py\")",
       "PowerShell(python \"C:\\\\Users\\\\LG\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\--wsl-localhost-Ubuntu-home-taek-github-DIVE-intergration\\\\84fdc2a1-eabd-495c-9d96-5d8b939f7f43\\\\scratchpad\\\\read_dict.py\" 2>&1 | Select-Object -First 200)",
-      "PowerShell(python \"C:\\\\Users\\\\LG\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\--wsl-localhost-Ubuntu-home-taek-github-DIVE-intergration\\\\84fdc2a1-eabd-495c-9d96-5d8b939f7f43\\\\scratchpad\\\\audit2.py\")"
+      "PowerShell(python \"C:\\\\Users\\\\LG\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\--wsl-localhost-Ubuntu-home-taek-github-DIVE-intergration\\\\84fdc2a1-eabd-495c-9d96-5d8b939f7f43\\\\scratchpad\\\\audit2.py\")",
+      "Bash(python3 -c \"import pandas,numpy,sklearn,scipy,matplotlib,seaborn,joblib;print\\(pandas.__version__,numpy.__version__,sklearn.__version__,scipy.__version__,matplotlib.__version__,seaborn.__version__\\)\")",
+      "Bash(python3 -c \"import pandas,numpy,sklearn,scipy,matplotlib,joblib;print\\('pandas',pandas.__version__\\);print\\('numpy',numpy.__version__\\);print\\('sklearn',sklearn.__version__\\);print\\('mpl',matplotlib.__version__\\)\")",
+      "Bash(python3 -V)",
+      "Bash(fc-list)",
+      "Bash(echo \"exit:$?\")",
+      "Bash(python3 -c ' *)",
+      "Bash(timeout 900 python3 -m src.run --input \"../important data/\\(합성데이터\\)종합해커톤.csv\" --outdir /tmp/claude-1000/-home-user-github-DIVE-intergration/2c9e595c-0f9e-43ff-9e87-882194a361a2/scratchpad/smoke --sample 6000)",
+      "Bash(python3 -)",
+      "Bash(python3 *)",
+      "Bash(pip install *)",
+      "Bash(/tmp/claude-1000/-home-user-github-DIVE-intergration/2c9e595c-0f9e-43ff-9e87-882194a361a2/scratchpad/venv/bin/python -)",
+      "Bash(/tmp/claude-1000/-home-user-github-DIVE-intergration/2c9e595c-0f9e-43ff-9e87-882194a361a2/scratchpad/venv/bin/pip install *)"
     ]
   }
 }
