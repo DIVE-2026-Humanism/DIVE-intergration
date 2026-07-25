@@ -37,6 +37,8 @@ public enum ErrorCode {
     NO_ELIGIBLE_POLICY(HttpStatus.NOT_FOUND, "R004", "조건에 맞는 정책이 없습니다."),
     DIAGNOSIS_NOT_FOUND(HttpStatus.NOT_FOUND, "R005", "진단 이력이 존재하지 않습니다."),
 
+    POLICY_NOT_FOUND(HttpStatus.NOT_FOUND, "P001", "존재하지 않는 정책입니다."),
+
     // Notification (알림)
     NOTIFICATION_NOT_FOUND(HttpStatus.NOT_FOUND, "N001", "존재하지 않는 알림입니다.");
 

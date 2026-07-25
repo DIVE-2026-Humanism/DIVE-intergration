@@ -47,5 +47,8 @@ kakao:
   client-id: ${KAKAO_CLIENT_ID:}
   client-secret: ${KAKAO_CLIENT_SECRET:}
 
+youthcenter:
+  api-key: ${YOUTH_CENTER_KEY:}
+
 server:
   port: ${SERVER_PORT:8082}
