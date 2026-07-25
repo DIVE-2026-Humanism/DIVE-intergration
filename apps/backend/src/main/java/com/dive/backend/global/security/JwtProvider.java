@@ -60,7 +60,7 @@ public class JwtProvider {
         Date refreshTokenExpiresIn = new Date(now + refreshTokenValidityInMilliseconds);
 
         String accessToken = Jwts.builder()
-                .setSubject(auth.getName())
+                .setSubject(String.valueOf(memberId))
                 .claim("memberId", memberId)
                 .claim(AUTHORITIES_KEY, authorities)
                 .setExpiration(accessTokenExpiresIn)
@@ -83,6 +83,10 @@ public class JwtProvider {
     /**
      * 소셜/외부 로그인(Sign in with Apple 등) 검증 후 memberId/email/권한만으로 발급.
      * Apple 로그인 추가 시: Apple identity token을 JWKS로 검증한 뒤 이 메서드로 토큰 발급.
+     *
+     * subject는 email이 아니라 memberId로 고정한다 — 카카오 계정처럼 이메일 동의를
+     * 안 받은 경우 email이 null이라, subject에 넣으면 토큰 파싱 시 PrincipalDetails
+     * (Spring Security User) 생성자가 "username은 null/빈값 불가"로 예외를 던진다.
      */
     public TokenDto createTokenForSocial(Long memberId, String email, String roleOrAuthority) {
         String authority = roleOrAuthority;
@@ -98,7 +102,7 @@ public class JwtProvider {
         Date refreshTokenExpiresIn = new Date(now + refreshTokenValidityInMilliseconds);
 
         String accessToken = Jwts.builder()
-                .setSubject(email)
+                .setSubject(String.valueOf(memberId))
                 .claim("memberId", memberId)
                 .claim(AUTHORITIES_KEY, authority)
                 .setExpiration(accessTokenExpiresIn)

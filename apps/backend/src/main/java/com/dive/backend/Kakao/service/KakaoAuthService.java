@@ -10,6 +10,7 @@ import com.dive.backend.member.domain.TokenDto;
 import com.dive.backend.member.repository.MemberRepository;
 import com.dive.backend.member.repository.RefreshTokenRepository;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -25,10 +26,11 @@ import java.time.Duration;
  * 흐름: 인가코드 → 카카오 액세스 토큰 → 카카오 사용자 정보 → 회원 upsert(Member.kakaoId) → 자체 JWT 발급
  *
  * 세션 모델은 AuthService(이메일/비밀번호 로그인)와 동일하게 맞췄다: refresh token은
- * Member 컬럼이 아니라 Redis(RefreshTokenRepository)에 key=토큰, value=email로 저장하고,
+ * Member 컬럼이 아니라 Redis(RefreshTokenRepository)에 key=토큰, value=memberId로 저장하고,
  * 로그아웃 시 access token은 남은 만료시간만큼 Redis 블랙리스트에 등록한다.
  */
 @Service
+@Slf4j
 public class KakaoAuthService {
 
     // application.yml의 kakao.client-id, kakao.client-secret 값을 주입받는다.
@@ -69,7 +71,8 @@ public class KakaoAuthService {
 
         TokenDto tokenDto = jwtProvider.createTokenForSocial(
                 member.getId(), member.getEmail(), member.getRole().name());
-        saveRefreshToken(member.getEmail(), tokenDto.getRefreshToken());
+        // email이 null일 수 있어(이메일 동의 안 한 카카오 계정) memberId를 키 매핑 값으로 사용
+        saveRefreshToken(String.valueOf(member.getId()), tokenDto.getRefreshToken());
 
         return new KakaoAuthController.TokenResponse(tokenDto.getAccessToken(), tokenDto.getRefreshToken());
     }
@@ -86,10 +89,10 @@ public class KakaoAuthService {
         refreshTokenRepository.deleteById(refreshToken);
     }
 
-    private void saveRefreshToken(String email, String refreshToken) {
+    private void saveRefreshToken(String memberIdValue, String refreshToken) {
         refreshTokenRepository.save(RefreshToken.builder()
                 .key(refreshToken)
-                .value(email)
+                .value(memberIdValue)
                 .build());
     }
 
@@ -113,6 +116,7 @@ public class KakaoAuthService {
                     .retrieve()
                     .body(KakaoTokenResponse.class);
         } catch (Exception e) {
+            log.error("카카오 토큰 교환 실패: {}", e.getMessage(), e);
             throw new BusinessException(ErrorCode.AUTHENTICATION_FAILED);
         }
     }
