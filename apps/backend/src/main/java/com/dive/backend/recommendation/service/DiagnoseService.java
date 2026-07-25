@@ -2,16 +2,22 @@ package com.dive.backend.recommendation.service;
 
 import com.dive.backend.global.error.BusinessException;
 import com.dive.backend.global.error.ErrorCode;
+import com.dive.backend.kcb.domain.KcbConnection;
+import com.dive.backend.kcb.repository.KcbConnectionRepository;
 import com.dive.backend.member.domain.Member;
 import com.dive.backend.member.repository.MemberRepository;
 import com.dive.backend.policy.domain.Policy;
 import com.dive.backend.policy.domain.PolicyLike;
+import com.dive.backend.recommendation.client.DiveAiClient;
 import com.dive.backend.recommendation.domain.*;
 import com.dive.backend.recommendation.dto.*;
 import com.dive.backend.recommendation.llm.LlmRecommendation;
 import com.dive.backend.recommendation.llm.PolicyReranker;
 import com.dive.backend.recommendation.llm.RecommendationProperties;
 import com.dive.backend.recommendation.repository.*;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -34,16 +40,20 @@ public class DiagnoseService {
     private final PolicyTypeResolver policyTypeResolver;
     private final PolicyReranker policyReranker;
     private final RecommendationProperties properties;
+    private final DiveAiClient diveAiClient;
+    private final KcbConnectionRepository kcbConnectionRepository;
+    private final ObjectMapper objectMapper;
 
     @Transactional
     public DiagnoseResponse diagnose(Long memberId, DiagnoseRequest request) {
         Member member = memberRepository.findById(memberId).orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
-        PolicyType type = policyTypeResolver.resolve(request.creditScore());
+        int score = fetchScore(latestKcbRecord(memberId));
+        PolicyType type = policyTypeResolver.resolve(score);
         List<Policy> candidates = candidates(type, request.userInputsOverride());
         if (candidates.isEmpty()) throw new BusinessException(ErrorCode.NO_ELIGIBLE_POLICY);
 
-        List<LlmRecommendation> selected = rerankOrFallback(type, request.creditScore(), request.userInputsOverride(), candidates);
-        Diagnosis diagnosis = diagnosisRepository.save(new Diagnosis(member, typeId(type), request.creditScore(), type));
+        List<LlmRecommendation> selected = rerankOrFallback(type, score, request.userInputsOverride(), candidates);
+        Diagnosis diagnosis = diagnosisRepository.save(new Diagnosis(member, typeId(type), score, type));
         Map<String, Policy> byNo = new HashMap<>();
         candidates.forEach(policy -> byNo.put(policy.getPlcyNo(), policy));
         List<PolicyRecommendation> saved = new ArrayList<>();
@@ -54,7 +64,7 @@ public class DiagnoseService {
                     diagnosis, member, policy, rank++, trim(recommendation.reason()), trim(recommendation.caution()))));
         }
         if (saved.isEmpty()) throw new BusinessException(ErrorCode.NO_ELIGIBLE_POLICY);
-        return toResponse(request.creditScore(), type, memberId, saved);
+        return toResponse(score, type, memberId, saved);
     }
 
     @Transactional(readOnly = true)
@@ -63,6 +73,27 @@ public class DiagnoseService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.DIAGNOSIS_NOT_FOUND));
         List<PolicyRecommendation> recommendations = policyRecommendationRepository.findByDiagnosisIdOrderByRankOrderAsc(diagnosis.getId());
         return toResponse(diagnosis.getCreditScore(), diagnosis.getUserType(), memberId, recommendations);
+    }
+
+    /** 회원이 연동한 최신 KCB 레코드(42필드)를 읽는다. 연동이 없으면 R001. */
+    private Map<String, Object> latestKcbRecord(Long memberId) {
+        KcbConnection connection = kcbConnectionRepository.findTopByMember_IdOrderByCreatedAtDesc(memberId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.KCB_NOT_CONNECTED));
+        try {
+            return objectMapper.readValue(connection.getKcbRecordJson(), new TypeReference<LinkedHashMap<String, Object>>() {});
+        } catch (JsonProcessingException exception) {
+            throw new IllegalStateException("저장된 KCB 레코드를 읽지 못했습니다.", exception);
+        }
+    }
+
+    /** KCB 레코드로 AI 서버에서 안정성 점수(0~100)를 받아 정수로 반환한다. */
+    private int fetchScore(Map<String, Object> kcbRecord) {
+        try {
+            return (int) Math.round(diveAiClient.compositeStabilityScore(kcbRecord));
+        } catch (RuntimeException exception) {
+            log.warn("Failed to fetch composite stability score from DIVE AI", exception);
+            throw new BusinessException(ErrorCode.AI_FEEDBACK_UNAVAILABLE);
+        }
     }
 
     private List<Policy> candidates(PolicyType type, UserInputsOverride profile) {

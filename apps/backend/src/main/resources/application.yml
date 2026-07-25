@@ -18,7 +18,7 @@ spring:
     show-sql: true
     properties:
       hibernate:
-        format_sql: true
+        format_sql: false
 
   data:
     redis:
@@ -29,7 +29,8 @@ spring:
 dive:
   ai:
     base-url: ${DIVE_AI_BASE_URL:https://ai.beceleb.org}
-    timeout-ms: ${DIVE_AI_TIMEOUT_MS:35000}
+    connect-timeout-ms: ${DIVE_AI_CONNECT_TIMEOUT_MS:3000}   # 연결 3초
+    read-timeout-ms: ${DIVE_AI_READ_TIMEOUT_MS:30000}        # 응답 30초
     max-retries: ${DIVE_AI_MAX_RETRIES:1}
 
 recommendation:

@@ -34,6 +34,8 @@ public enum ErrorCode {
     ACCESS_DENIED(HttpStatus.FORBIDDEN, "A005", "접근 권한이 없습니다."),
 
     // Recommendation (정책 추천)
+    KCB_NOT_CONNECTED(HttpStatus.BAD_REQUEST, "R001", "KCB 신용정보 연동이 필요합니다."),
+    AI_FEEDBACK_UNAVAILABLE(HttpStatus.SERVICE_UNAVAILABLE, "R003", "신용 점수 산정 AI 서버에 연결할 수 없습니다."),
     NO_ELIGIBLE_POLICY(HttpStatus.NOT_FOUND, "R004", "조건에 맞는 정책이 없습니다."),
     DIAGNOSIS_NOT_FOUND(HttpStatus.NOT_FOUND, "R005", "진단 이력이 존재하지 않습니다."),
 

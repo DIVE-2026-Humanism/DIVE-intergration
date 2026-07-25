@@ -1,15 +1,10 @@
 package com.dive.backend.recommendation.dto;
 
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
 
+// 점수는 서버가 연동 저장된 KCB(kcb_connection)를 /v1/economic-feedback로 보내 산정한다.
+// 따라서 요청에 KCB 원본을 담지 않는다. 온보딩값만 선택적으로 덮어쓴다.
 public record DiagnoseRequest(
-        @NotNull(message = "신용 점수가 필요합니다.")
-        @Min(value = 0, message = "신용 점수는 0 이상이어야 합니다.")
-        @Max(value = 100, message = "신용 점수는 100 이하여야 합니다.")
-        Integer creditScore,
         @Valid UserInputsOverride userInputsOverride
 ) {
 }
