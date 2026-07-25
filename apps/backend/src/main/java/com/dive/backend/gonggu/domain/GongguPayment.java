@@ -48,4 +48,18 @@ public class GongguPayment {
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
+
+    public void assignTid(String pgTid) {
+        this.pgTid = pgTid;
+    }
+
+    public void approve(String paymentMethodType) {
+        this.paymentStatus = PaymentStatus.PAID;
+        this.paymentMethod = paymentMethodType;
+        this.paidAt = LocalDateTime.now();
+    }
+
+    public void cancel() {
+        this.paymentStatus = PaymentStatus.CANCELLED;
+    }
 }

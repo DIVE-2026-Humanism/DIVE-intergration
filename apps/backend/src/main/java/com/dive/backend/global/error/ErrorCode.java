@@ -38,7 +38,10 @@ public enum ErrorCode {
     POLICY_NOT_FOUND(HttpStatus.NOT_FOUND, "P001", "존재하지 않는 정책입니다."),
 
     // Gonggu (공구 관련)
-    GONGGU_NOT_FOUND(HttpStatus.NOT_FOUND, "G001", "존재하지 않는 공구입니다.");
+    GONGGU_NOT_FOUND(HttpStatus.NOT_FOUND, "G001", "존재하지 않는 공구입니다."),
+    GONGGU_NOT_RECRUITING(HttpStatus.BAD_REQUEST, "G002", "모집 중인 공구가 아닙니다."),
+    GONGGU_ALREADY_PAID(HttpStatus.BAD_REQUEST, "G003", "이미 결제한 공구입니다."),
+    GONGGU_PAYMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "G004", "존재하지 않는 결제 내역입니다.");
 
     private final HttpStatus httpStatus;
     private final String code;

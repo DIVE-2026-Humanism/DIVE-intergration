@@ -59,4 +59,12 @@ public class Gonggu {
     @UpdateTimestamp
     @Column(nullable = false)
     private LocalDateTime updatedAt;
+
+    public void increaseCurrentCount() {
+        this.currentCount++;
+    }
+
+    public void completeFunding() {
+        this.status = Status.COMPLETED;
+    }
 }
