@@ -21,6 +21,15 @@ spring:
       port: ${REDIS_PORT:6379}
       password: ${REDIS_PASSWORD:}
 
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+file:
+  upload-dir: ${FILE_UPLOAD_DIR:./uploads/gonggu}
+  base-url: ${FILE_BASE_URL:/images}
+
 jwt:
   secret: ${JWT_SECRET:change-this-to-a-long-random-secret-in-production-env-var}
   access-token-validity-in-milliseconds: ${JWT_AT_VALIDITY:3600000}      # 1시간
