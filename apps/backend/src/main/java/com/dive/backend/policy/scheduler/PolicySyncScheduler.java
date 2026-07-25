@@ -13,8 +13,7 @@ public class PolicySyncScheduler {
 
     private final PolicySyncService policySyncService;
 
-    /** 매일 새벽 3시 정책 동기화 */
-    @Scheduled(cron = "0 0 3 * * *")
+    @Scheduled(cron = "0 10 * * * *")
     public void syncDaily() {
         log.info("정책 동기화 스케줄러 시작");
         try {

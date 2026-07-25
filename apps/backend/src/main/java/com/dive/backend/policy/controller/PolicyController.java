@@ -6,6 +6,7 @@ import com.dive.backend.policy.dto.PolicyDetailResponse;
 import com.dive.backend.policy.dto.PolicyResponse;
 import com.dive.backend.policy.service.PolicyService;
 import lombok.RequiredArgsConstructor;
+import org.aspectj.weaver.patterns.AndPointcut;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -43,5 +44,10 @@ public class PolicyController {
     @GetMapping("/myLike")
     public ApiResponse<List<PolicyResponse>> getMyLike(@AuthenticationPrincipal PrincipalDetails principalDetails) {
         return ApiResponse.success("내가 좋아한 정책들 조회 성공", policyService.getMyLike(principalDetails.getMemberId()));
+    }
+
+    @GetMapping("/topPolicies")
+    public ApiResponse<List<Long>> getTopPolicies() {
+        return ApiResponse.success("Top10 정책들 조회 성공 - policyId 반환", policyService.getTop10());
     }
 }

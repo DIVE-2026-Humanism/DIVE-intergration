@@ -32,7 +32,7 @@ file:
 
 jwt:
   secret: ${JWT_SECRET:change-this-to-a-long-random-secret-in-production-env-var}
-  access-token-validity-in-milliseconds: ${JWT_AT_VALIDITY:3600000}      # 1시간
+  access-token-validity-in-milliseconds: ${JWT_AT_VALIDITY:43200000}      # 12시간
   refresh-token-validity-in-milliseconds: ${JWT_RT_VALIDITY:604800000}  # 7일
 
 kakao:

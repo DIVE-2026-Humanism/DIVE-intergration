@@ -12,6 +12,7 @@ import com.dive.backend.policy.repository.PolicyLikeRepository;
 import com.dive.backend.policy.repository.PolicyRepository;
 import com.dive.backend.policy.repository.PolicySpecifications;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -129,5 +130,9 @@ public class PolicyService {
                 .map(PolicyLike::getPolicy)
                 .map(this::toResponse)
                 .toList();
+    }
+
+    public List<Long> getTop10() {
+        return policyRepository.findByTopLike(PageRequest.of(0, 10));
     }
 }
