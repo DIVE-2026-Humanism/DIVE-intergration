@@ -32,7 +32,7 @@ public class KcbConnectionService {
                     .member(member).kcbRecordJson(objectMapper.writeValueAsString(dummyRecord()))
                     .dummy(true).build());
         } catch (JsonProcessingException exception) {
-            throw new IllegalStateException("더미 KCB 데이터를 만들지 못했습니다.", exception);
+            throw new IllegalStateException("KCB 연동 데이터를 만들지 못했습니다.", exception);
         }
     }
 
@@ -42,7 +42,7 @@ public class KcbConnectionService {
             int score = objectMapper.readTree(connection.getKcbRecordJson()).path("신용평점").asInt();
             return new DemoSummary(score, scoreGrade(score));
         } catch (JsonProcessingException exception) {
-            throw new IllegalStateException("더미 KCB 요약을 읽지 못했습니다.", exception);
+            throw new IllegalStateException("KCB 연동 요약을 읽지 못했습니다.", exception);
         }
     }
 
@@ -94,7 +94,7 @@ public class KcbConnectionService {
     }
 
     /**
-     * 매 연동마다 하나를 뽑아 KCB 데모 값의 분포를 만든다. 점수만 무작위로 바꾸지 않고
+     * 매 연동마다 하나를 뽑아 KCB 연동 값의 분포를 만든다. 점수만 무작위로 바꾸지 않고
      * 소득·부채·소비·연체를 함께 움직여 AI 서버가 해석 가능한 레코드를 보장한다.
      */
     private enum DemoProfile {

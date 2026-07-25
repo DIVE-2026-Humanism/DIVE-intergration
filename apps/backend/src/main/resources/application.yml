@@ -68,9 +68,9 @@ kakao:
 kakaopay:
   cid: ${KAKAO_PAY_CID:TC0ONETIME} # 테스트용 고정 가맹점 코드. 실서비스 승인 후 발급받은 cid로 교체
   secret-key: ${KAKAO_PAY_SECRET_KEY:}
-  approval-url: ${KAKAO_PAY_APPROVAL_URL:http://localhost:8080/api/v1/gonggu/payment/approve}
-  cancel-url: ${KAKAO_PAY_CANCEL_URL:http://localhost:8080/api/v1/gonggu/payment/cancel}
-  fail-url: ${KAKAO_PAY_FAIL_URL:http://localhost:8080/api/v1/gonggu/payment/fail}
+  approval-url: ${KAKAO_PAY_APPROVAL_URL:http://192.168.0.68:8082/api/v1/gonggu/payment/approve}
+  cancel-url: ${KAKAO_PAY_CANCEL_URL:http://192.168.0.68:8082/api/v1/gonggu/payment/cancel}
+  fail-url: ${KAKAO_PAY_FAIL_URL:http://192.168.0.68:8082/api/v1/gonggu/payment/fail}
 
 youthcenter:
   api-key: ${YOUTH_CENTER_KEY:}

@@ -42,6 +42,7 @@ public enum ErrorCode {
     GONGGU_NOT_RECRUITING(HttpStatus.BAD_REQUEST, "G002", "모집 중인 공구가 아닙니다."),
     GONGGU_ALREADY_PAID(HttpStatus.BAD_REQUEST, "G003", "이미 결제한 공구입니다."),
     GONGGU_PAYMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "G004", "존재하지 않는 결제 내역입니다."),
+    KAKAOPAY_NOT_CONFIGURED(HttpStatus.SERVICE_UNAVAILABLE, "G005", "카카오페이 결제 키가 설정되지 않았습니다."),
     // Recommendation (정책 추천)
     KCB_NOT_CONNECTED(HttpStatus.BAD_REQUEST, "R001", "KCB 신용정보 연동이 필요합니다."),
     AI_FEEDBACK_UNAVAILABLE(HttpStatus.SERVICE_UNAVAILABLE, "R003", "신용 점수 산정 AI 서버에 연결할 수 없습니다."),

@@ -20,7 +20,7 @@ public class KcbConnectionController {
     public ApiResponse<Response> connect(@AuthenticationPrincipal PrincipalDetails principal) {
         KcbConnection saved = kcbConnectionService.connectDummy(principal.getMemberId());
         KcbConnectionService.DemoSummary summary = kcbConnectionService.summary(saved);
-        return ApiResponse.success("더미 KCB 정보 연동 완료", new Response(saved.getId(), saved.getCreatedAt(), saved.isDummy(), summary.creditScore(), summary.creditGrade()));
+        return ApiResponse.success("KCB 정보 연동 완료", new Response(saved.getId(), saved.getCreatedAt(), saved.isDummy(), summary.creditScore(), summary.creditGrade()));
     }
     public record Response(Long id, java.time.LocalDateTime createdAt, boolean dummy, int creditScore, String creditGrade) {}
 }

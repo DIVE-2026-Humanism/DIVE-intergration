@@ -1,5 +1,7 @@
 package com.dive.backend.gonggu.client;
 
+import com.dive.backend.global.error.BusinessException;
+import com.dive.backend.global.error.ErrorCode;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
@@ -14,6 +16,7 @@ public class KakaoPayClient {
     private final RestClient restClient = RestClient.create("https://open-api.kakaopay.com");
 
     public KakaoPayReadyResponse ready(KakaoPayReadyRequest request) {
+        requireSecretKey();
         return restClient.post()
                 .uri("/online/v1/payment/ready")
                 .header("Authorization", "SECRET_KEY " + secretKey)
@@ -24,6 +27,7 @@ public class KakaoPayClient {
     }
 
     public KakaoPayApproveResponse approve(KakaoPayApproveRequest request) {
+        requireSecretKey();
         return restClient.post()
                 .uri("/online/v1/payment/approve")
                 .header("Authorization", "SECRET_KEY " + secretKey)
@@ -34,6 +38,7 @@ public class KakaoPayClient {
     }
 
     public KakaoPayCancelResponse cancel(KakaoPayCancelRequest request) {
+        requireSecretKey();
         return restClient.post()
                 .uri("/online/v1/payment/cancel")
                 .header("Authorization", "SECRET_KEY " + secretKey)
@@ -41,5 +46,11 @@ public class KakaoPayClient {
                 .body(request)
                 .retrieve()
                 .body(KakaoPayCancelResponse.class);
+    }
+
+    private void requireSecretKey() {
+        if (secretKey == null || secretKey.isBlank()) {
+            throw new BusinessException(ErrorCode.KAKAOPAY_NOT_CONFIGURED);
+        }
     }
 }
