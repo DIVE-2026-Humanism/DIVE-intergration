@@ -40,7 +40,9 @@
       "PowerShell(python \"C:\\\\Users\\\\LG\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\--wsl-localhost-Ubuntu-home-taek-github-DIVE-intergration\\\\84fdc2a1-eabd-495c-9d96-5d8b939f7f43\\\\scratchpad\\\\check_identity.py\")",
       "PowerShell(python \"C:\\\\Users\\\\LG\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\--wsl-localhost-Ubuntu-home-taek-github-DIVE-intergration\\\\84fdc2a1-eabd-495c-9d96-5d8b939f7f43\\\\scratchpad\\\\regression.py\")",
       "PowerShell(python \"C:\\\\Users\\\\LG\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\--wsl-localhost-Ubuntu-home-taek-github-DIVE-intergration\\\\84fdc2a1-eabd-495c-9d96-5d8b939f7f43\\\\scratchpad\\\\audit.py\")",
-      "PowerShell(python \"C:\\\\Users\\\\LG\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\--wsl-localhost-Ubuntu-home-taek-github-DIVE-intergration\\\\84fdc2a1-eabd-495c-9d96-5d8b939f7f43\\\\scratchpad\\\\deepdive.py\")"
+      "PowerShell(python \"C:\\\\Users\\\\LG\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\--wsl-localhost-Ubuntu-home-taek-github-DIVE-intergration\\\\84fdc2a1-eabd-495c-9d96-5d8b939f7f43\\\\scratchpad\\\\deepdive.py\")",
+      "PowerShell(python \"C:\\\\Users\\\\LG\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\--wsl-localhost-Ubuntu-home-taek-github-DIVE-intergration\\\\84fdc2a1-eabd-495c-9d96-5d8b939f7f43\\\\scratchpad\\\\read_dict.py\" 2>&1 | Select-Object -First 200)",
+      "PowerShell(python \"C:\\\\Users\\\\LG\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\--wsl-localhost-Ubuntu-home-taek-github-DIVE-intergration\\\\84fdc2a1-eabd-495c-9d96-5d8b939f7f43\\\\scratchpad\\\\audit2.py\")"
     ]
   }
 }
