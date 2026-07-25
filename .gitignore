@@ -8,6 +8,7 @@
 # KCB rows must not be committed to the integration repository
 data/kcb/*
 !data/kcb/.keep
+KCB/
 
 # Local AI service outputs
 LLM service/artifacts/*
