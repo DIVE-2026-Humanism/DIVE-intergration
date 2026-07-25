@@ -67,4 +67,8 @@ public class Gonggu {
     public void completeFunding() {
         this.status = Status.COMPLETED;
     }
+
+    public void failFunding() {
+        this.status = Status.FAILED;
+    }
 }

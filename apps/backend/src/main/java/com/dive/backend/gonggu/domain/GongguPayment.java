@@ -62,4 +62,9 @@ public class GongguPayment {
     public void cancel() {
         this.paymentStatus = PaymentStatus.CANCELLED;
     }
+
+    /** 결제 완료(PAID) 후 펀딩 실패 등으로 환불 처리 */
+    public void refund() {
+        this.paymentStatus = PaymentStatus.REFUNDED;
+    }
 }

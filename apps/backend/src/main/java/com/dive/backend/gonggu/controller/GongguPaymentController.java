@@ -44,4 +44,11 @@ public class GongguPaymentController {
         gongguPaymentService.fail(paymentId);
         return ApiResponse.success("결제에 실패했습니다.");
     }
+
+    /** 마감 지난 공구 펀딩 실패/환불 처리 수동 트리거 (테스트용, 실제로는 매시 스케줄러가 실행) */
+    @PostMapping("/check-expired")
+    public ApiResponse<Void> checkExpiredFundings() {
+        gongguPaymentService.processExpiredFundings();
+        return ApiResponse.success("마감 처리 완료");
+    }
 }

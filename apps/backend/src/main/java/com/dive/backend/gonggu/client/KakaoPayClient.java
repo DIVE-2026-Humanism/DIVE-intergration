@@ -32,4 +32,14 @@ public class KakaoPayClient {
                 .retrieve()
                 .body(KakaoPayApproveResponse.class);
     }
+
+    public KakaoPayCancelResponse cancel(KakaoPayCancelRequest request) {
+        return restClient.post()
+                .uri("/online/v1/payment/cancel")
+                .header("Authorization", "SECRET_KEY " + secretKey)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(request)
+                .retrieve()
+                .body(KakaoPayCancelResponse.class);
+    }
 }
