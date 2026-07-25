@@ -2,6 +2,7 @@ package com.dive.backend.policy.controller;
 
 import com.dive.backend.global.common.ApiResponse;
 import com.dive.backend.global.security.PrincipalDetails;
+import com.dive.backend.policy.dto.PolicyCategoryResponse;
 import com.dive.backend.policy.dto.PolicyDetailResponse;
 import com.dive.backend.policy.dto.PolicyResponse;
 import com.dive.backend.policy.service.PolicyService;
@@ -18,13 +19,20 @@ public class PolicyController {
 
     private final PolicyService policyService;
 
+    /** 대분류/중분류 목록 (필터 UI용) */
+    @GetMapping("/categories")
+    public ApiResponse<List<PolicyCategoryResponse>> getCategories() {
+        return ApiResponse.success("조회 성공", policyService.getCategories());
+    }
+
     @GetMapping("/all")
     public ApiResponse<List<PolicyResponse>> getAllPolicies(
             @AuthenticationPrincipal PrincipalDetails principalDetails,
             @RequestParam(required = false) String lclsfNm,
-            @RequestParam(required = false) String mclsfNm
+            @RequestParam(required = false) String mclsfNm,
+            @RequestParam(required = false) String keyword
     ) {
-        return ApiResponse.success("조회 성공", policyService.getAll(lclsfNm, mclsfNm));
+        return ApiResponse.success("조회 성공", policyService.getAll(lclsfNm, mclsfNm, keyword));
     }
 
     @GetMapping("/{plcyId}")

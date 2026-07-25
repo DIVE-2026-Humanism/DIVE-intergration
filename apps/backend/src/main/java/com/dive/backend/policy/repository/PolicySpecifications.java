@@ -30,4 +30,16 @@ public final class PolicySpecifications {
             return cb.or(predicates);
         };
     }
+
+    /** 키워드가 정책명/키워드/설명 중 하나라도 부분포함되면 매치(OR) */
+    public static Specification<Policy> keywordContains(String keyword) {
+        return (root, query, cb) -> {
+            String like = "%" + keyword + "%";
+            return cb.or(
+                    cb.like(root.get("plcyNm"), like),
+                    cb.like(root.get("plcyKywdNm"), like),
+                    cb.like(root.get("plcyExplnCn"), like)
+            );
+        };
+    }
 }

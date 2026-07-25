@@ -1,6 +1,7 @@
 package com.dive.backend.recommendation.domain;
 
 import com.dive.backend.member.domain.Member;
+import com.dive.backend.policy.domain.Policy;
 import jakarta.persistence.*;
 import lombok.Getter;
 

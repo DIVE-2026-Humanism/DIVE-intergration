@@ -59,7 +59,8 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                     .requestMatchers(
                             "/api/v1/auth/signup", "/api/v1/auth/login", "/api/v1/auth/refresh",
-                            "/api/auth/kakao",
+                            "/api/auth/kakao", "/api/auth/kakao/callback",
+                            "/api/v1/policy/all", "/api/v1/policy/categories",
                             "/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**",
                             "/actuator/health", "/actuator/info"
                     ).permitAll()

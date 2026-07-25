@@ -4,6 +4,8 @@ import com.dive.backend.global.error.BusinessException;
 import com.dive.backend.global.error.ErrorCode;
 import com.dive.backend.member.domain.Member;
 import com.dive.backend.member.repository.MemberRepository;
+import com.dive.backend.policy.domain.Policy;
+import com.dive.backend.policy.domain.PolicyLike;
 import com.dive.backend.recommendation.domain.*;
 import com.dive.backend.recommendation.dto.*;
 import com.dive.backend.recommendation.llm.LlmRecommendation;
@@ -83,8 +85,8 @@ public class DiagnoseService {
     }
 
     private boolean ageMatches(Policy policy, Integer age) {
-        return age == null || (policy.getMinAge() == null || age >= policy.getMinAge())
-                && (policy.getMaxAge() == null || age <= policy.getMaxAge());
+        return age == null || (policy.getSprtTrgtMinAge() == null || age >= policy.getSprtTrgtMinAge())
+                && (policy.getSprtTrgtMaxAge() == null || age <= policy.getSprtTrgtMaxAge());
     }
 
     private boolean codeMatches(String condition, String value, String unrestrictedCode) {
@@ -127,8 +129,8 @@ public class DiagnoseService {
 
     private DiagnoseResponse toResponse(int score, PolicyType type, Long memberId, List<PolicyRecommendation> recommendations) {
         Set<Long> ids = recommendations.stream().map(r -> r.getPolicy().getId()).collect(java.util.stream.Collectors.toSet());
-        Set<Long> liked = policyLikeRepository.findByMemberIdAndPolicyIdIn(memberId, ids).stream()
-                .map(PolicyLike::getPolicyId).collect(java.util.stream.Collectors.toSet());
+        Set<Long> liked = policyLikeRepository.findByMember_IdAndPolicy_IdIn(memberId, ids).stream()
+                .map(pl -> pl.getPolicy().getId()).collect(java.util.stream.Collectors.toSet());
         List<RecommendedPolicy> cards = recommendations.stream().map(r -> {
             Policy p = r.getPolicy();
             return new RecommendedPolicy(p.getId(), p.getPlcyNo(), p.getPlcyNm(), p.getLclsfNm(), p.getPlcySprtCn(),

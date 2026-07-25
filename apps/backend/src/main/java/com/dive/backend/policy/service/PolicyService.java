@@ -6,6 +6,7 @@ import com.dive.backend.member.domain.Member;
 import com.dive.backend.member.repository.MemberRepository;
 import com.dive.backend.policy.domain.Policy;
 import com.dive.backend.policy.domain.PolicyLike;
+import com.dive.backend.policy.dto.PolicyCategoryResponse;
 import com.dive.backend.policy.dto.PolicyDetailResponse;
 import com.dive.backend.policy.dto.PolicyResponse;
 import com.dive.backend.policy.repository.PolicyLikeRepository;
@@ -26,7 +27,18 @@ public class PolicyService {
     private final PolicyLikeRepository policyLikeRepository;
     private final MemberRepository memberRepository;
 
-    public List<PolicyResponse> getAll(String lclsfNm, String mclsfNm) {
+    /** 대분류 5개 + 각 대분류의 중분류 목록. (온통청년 분류 구조) */
+    public List<PolicyCategoryResponse> getCategories() {
+        return List.of(
+                new PolicyCategoryResponse("일자리", List.of("취업", "재직자", "창업")),
+                new PolicyCategoryResponse("주거", List.of("주택 및 거주지", "기숙사", "전월세 및 주거급여 지원")),
+                new PolicyCategoryResponse("교육", List.of("미래역량강화", "교육비지원", "온라인교육")),
+                new PolicyCategoryResponse("금융･복지･문화", List.of("취약계층 및 금융지원", "건강", "예술인지원", "문화활동")),
+                new PolicyCategoryResponse("참여권리", List.of("청년참여", "정책인프라구축", "청년국제교류", "권익보호"))
+        );
+    }
+
+    public List<PolicyResponse> getAll(String lclsfNm, String mclsfNm, String keyword) {
         Specification<Policy> spec = (root, query, cb) -> cb.conjunction();
 
         if (lclsfNm != null && !lclsfNm.isBlank()) {
@@ -34,6 +46,9 @@ public class PolicyService {
         }
         if (mclsfNm != null && !mclsfNm.isBlank()) {
             spec = spec.and(PolicySpecifications.mclsfNmIn(PolicyCategoryAlias.resolveMclsfNm(mclsfNm)));
+        }
+        if (keyword != null && !keyword.isBlank()) {
+            spec = spec.and(PolicySpecifications.keywordContains(keyword.trim()));
         }
 
         return policyRepository.findAll(spec).stream()
